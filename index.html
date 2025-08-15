@@ -1,227 +1,180 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Minecraft BE ビヘイビアーパック Functionメーカー</title>
+<meta charset="UTF-8">
+<title>BE Function Creator</title>
+<style>
+body { font-family: sans-serif; padding: 20px; background: #f4f4f4; }
+input, textarea, button { margin: 5px 0; padding: 5px; }
+.function-item { background: #fff; padding: 10px; margin: 5px 0; border: 1px solid #ccc; }
+button { cursor: pointer; }
+</style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-<style>
-/* --- 省略なし（スタイルは前回のまま） --- */
-:root { --gap:12px; --radius:10px; }
-* { box-sizing:border-box; }
-body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans JP", Arial, sans-serif; margin:0; padding:24px; background:#0e0f12; color:#e7e9ee; }
-h1 { font-size:1.4rem; margin:0 0 10px; }
-.app { max-width:980px; margin:0 auto; display:grid; gap:var(--gap); }
-.card { background:#16181d; border:1px solid #2a2f39; border-radius:var(--radius); padding:16px; }
-label { display:block; font-weight:600; margin-bottom:6px; }
-input[type="text"], textarea { width:100%; background:#0f1115; color:#e7e9ee; border:1px solid #2a2f39; border-radius:8px; padding:10px 12px; outline:none; }
-textarea { min-height:110px; resize:vertical; line-height:1.35; }
-input[type="file"] { display:block; }
-.row { display:grid; gap:var(--gap); grid-template-columns:1fr; }
-@media (min-width: 880px) { .row.two { grid-template-columns: 1fr 1fr; } }
-.hint { font-size:.9rem; color:#98a2b3; }
-.req::after { content:" *"; color:#ff6b6b; }
-.btn { border:1px solid #2a2f39; background:#1b1f28; color:#e7e9ee; padding:10px 14px; border-radius:8px; cursor:pointer; display:inline-flex; align-items:center; gap:8px; }
-.btn:hover { background:#222734; }
-.btn.primary { background:#2a6ef7; border-color:#2a6ef7; }
-.btn.primary:hover { filter:brightness(1.1); }
-.btn.ghost { background:transparent; }
-.btn.icon { padding:8px; border-radius:6px; }
-.toolbar { display:flex; gap:10px; flex-wrap:wrap; }
-.functions { display:grid; gap:10px; }
-.func-item { border:1px solid #2a2f39; border-radius:10px; padding:12px; background:#0f1115; display:grid; gap:8px; }
-.func-head { display:flex; align-items:center; justify-content:space-between; gap:12px; }
-.func-name { font-weight:700; word-break:break-all; }
-.icons { display:flex; gap:6px; }
-.badge { background:#2a2f39; padding:2px 8px; border-radius:999px; font-size:.8rem; }
-.error { color:#ff6b6b; font-weight:700; }
-.success { color:#4ade80; font-weight:700; }
-.list-empty { color:#98a2b3; }
-.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Noto Sans Mono", monospace; }
-.spacer { height:6px; }
-</style>
 </head>
 <body>
-  <div class="app">
-    <header>
-      <h1>ビヘイビアーパック Function メーカー（.mcaddon 出力）</h1>
-      <div class="hint">タイトルと function（1つ以上）は必須です。画像と説明は任意です。</div>
-    </header>
 
-    <!-- パック情報 -->
-    <section class="card">
-      <div class="row two">
-        <div>
-          <label class="req">パックのタイトル</label>
-          <input type="text" id="packTitle" placeholder="例）My Function Pack" />
-        </div>
-        <div>
-          <label>説明（任意）</label>
-          <input type="text" id="packDesc" placeholder="例）コマンド自動化用の関数集" />
-          <div class="hint">manifest.json の description に入ります</div>
-        </div>
-      </div>
-      <div class="spacer"></div>
-      <div class="row two">
-        <div>
-          <label>アイコン画像（任意）</label>
-          <input type="file" id="packIcon" accept="image/*" />
-          <div class="hint">入れると <code class="mono">pack_icon.png</code> として同梱されます（推奨 256×256）</div>
-        </div>
-        <div>
-          <label>パックのバージョン</label>
-          <input type="text" id="packVersion" value="1.0.0" />
-        </div>
-      </div>
-    </section>
+<h1>BE Function Creator</h1>
+<label>タイトル（必須）<br><input id="packTitle" placeholder="パック名"></label><br>
+<label>説明（任意）<br><textarea id="packDesc"></textarea></label><br>
+<label>画像（任意）<br><input type="file" id="packIcon" accept="image/*"></label><br>
 
-    <!-- function作成 -->
-    <section class="card">
-      <h2 style="margin-top:0">function の作成</h2>
-      <div class="row">
-        <div>
-          <label class="req">コマンド名（ファイル名）</label>
-          <input type="text" id="funcName" placeholder="例）start" />
-        </div>
-        <div>
-          <label class="req">コマンド内容（1行に1コマンド）</label>
-          <textarea id="funcBody"></textarea>
-        </div>
-        <div class="toolbar">
-          <button class="btn" id="addFuncBtn">＋ 追加</button>
-          <span id="funcMsg"></span>
-        </div>
-      </div>
-      <div class="spacer"></div>
-      <div class="functions" id="funcList">
-        <div class="list-empty">まだ function がありません。</div>
-      </div>
-    </section>
+<h2>Function 作成</h2>
+<label>コマンド名（必須）<br><input id="funcName" placeholder="例) reset"></label><br>
+<label>コマンド内容（必須）<br>
+<textarea id="funcBody" placeholder="clear @a
+tp @a 0 0 0
+gamemode a @a"></textarea></label><br>
+<button id="addFunc">追加</button>
 
-    <!-- 出力 -->
-    <section class="card">
-      <div class="toolbar">
-        <button class="btn primary" id="exportBtn">ファイルをインポート（.mcaddon を作成）</button>
-      </div>
-      <div id="exportMsg" class="hint" style="margin-top:8px;"></div>
-    </section>
-  </div>
+<div id="functionsList"></div>
+
+<hr>
+<button id="exportBtn">.mcaddon作成</button>
+<p id="exportMsg"></p>
 
 <script>
-const $ = sel => document.querySelector(sel);
-const sanitizeName = s => (s||"").trim().toLowerCase().replace(/\s+/g,"_").replace(/[^a-z0-9_\-\.]/g,"_");
-const parseVersion = v => (v||"1.0.0").split(".").map(n=>parseInt(n)||0);
-const uuidv4 = () => crypto.randomUUID ? crypto.randomUUID() :
-  "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,c=>{
-    const r=Math.random()*16|0,v=c==="x"?r:(r&0x3|0x8);return v.toString(16);
-  });
+const packTitleEl = document.getElementById("packTitle");
+const packDescEl = document.getElementById("packDesc");
+const packIconEl = document.getElementById("packIcon");
+const funcNameEl = document.getElementById("funcName");
+const funcBodyEl = document.getElementById("funcBody");
+const addFuncBtn = document.getElementById("addFunc");
+const functionsListEl = document.getElementById("functionsList");
+const exportBtn = document.getElementById("exportBtn");
+const exportMsg = document.getElementById("exportMsg");
 
 let functions = [];
-let seq=0;
 
-const packTitleEl=$("#packTitle");
-const packDescEl=$("#packDesc");
-const packIconEl=$("#packIcon");
-const packVersionEl=$("#packVersion");
-const funcNameEl=$("#funcName");
-const funcBodyEl=$("#funcBody");
-const funcListEl=$("#funcList");
-const funcMsgEl=$("#funcMsg");
-const exportBtn=$("#exportBtn");
-const exportMsg=$("#exportMsg");
-
-$("#addFuncBtn").addEventListener("click",()=>{
-  let name=sanitizeName(funcNameEl.value);
-  let body=(funcBodyEl.value||"").trim();
-  if(!name){showFuncMsg("コマンド名必須",true);return;}
-  if(!body){showFuncMsg("コマンド内容必須",true);return;}
-  name=ensureUniqueName(name);
-  functions.push({id:++seq,name,body});
-  funcNameEl.value=""; funcBodyEl.value="";
-  renderFunctions();
-  showFuncMsg(`追加: ${name}.mcfunction`,false);
-});
-
-function ensureUniqueName(name){
-  let base=name.replace(/\.mcfunction$/i,"");
-  let cand=base, i=2;
-  while(functions.some(f=>f.name===cand)){cand=`${base}_${i++}`;}
-  return cand;
+function sanitizeName(name) {
+  return name.replace(/[^a-zA-Z0-9_\-]/g, "_");
 }
 
-function showFuncMsg(msg,err){funcMsgEl.textContent=msg;funcMsgEl.className=err?"error":"success";}
+function setExportMsg(msg, isError) {
+  exportMsg.style.color = isError ? "red" : "green";
+  exportMsg.textContent = msg;
+}
 
-function renderFunctions(){
-  funcListEl.innerHTML="";
-  if(functions.length===0){
-    funcListEl.innerHTML='<div class="list-empty">まだ function がありません。</div>';
-    return;
-  }
-  functions.forEach(f=>{
-    const div=document.createElement("div");
-    div.className="func-item";
-    div.innerHTML=`<div class="func-head"><span class="func-name">${f.name}.mcfunction</span></div><pre class="mono">${f.body}</pre>`;
-    funcListEl.appendChild(div);
+function renderFunctions() {
+  functionsListEl.innerHTML = "";
+  functions.forEach((f, index) => {
+    const div = document.createElement("div");
+    div.className = "function-item";
+    div.innerHTML = `
+      <b>${f.name}</b><br>
+      <pre>${f.body}</pre>
+      <button class="edit">✏ 編集</button>
+      <button class="delete">🗑 削除</button>
+    `;
+    div.querySelector(".edit").addEventListener("click", () => {
+      funcNameEl.value = f.name;
+      funcBodyEl.value = f.body;
+      functions.splice(index, 1);
+      renderFunctions();
+    });
+    div.querySelector(".delete").addEventListener("click", () => {
+      functions.splice(index, 1);
+      renderFunctions();
+    });
+    functionsListEl.appendChild(div);
   });
 }
 
-function buildManifest(){
-  const name=packTitleEl.value.trim();
-  const desc=packDescEl.value.trim()||name;
-  const version=parseVersion(packVersionEl.value);
+addFuncBtn.addEventListener("click", () => {
+  const name = sanitizeName(funcNameEl.value.trim());
+  let body = funcBodyEl.value.trim();
+
+  if (!name || !body) {
+    alert("コマンド名と内容は必須です");
+    return;
+  }
+
+  // 先頭の / を削除
+  body = body.split("\n").map(line => line.replace(/^\/+/, "")).join("\n");
+
+  // 10000行制限
+  const totalLines = functions.reduce((sum, f) => sum + f.body.split("\n").length, 0) + body.split("\n").length;
+  if (totalLines > 10000) {
+    alert("限界です（10000行を超えています）");
+    return;
+  }
+
+  functions.push({ name, body });
+  funcNameEl.value = "";
+  funcBodyEl.value = "";
+  renderFunctions();
+});
+
+function fileToArrayBuffer(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = e => resolve(e.target.result);
+    reader.onerror = reject;
+    reader.readAsArrayBuffer(file);
+  });
+}
+
+function buildManifest() {
   return {
-    format_version:2,
-    header:{name,description:desc,uuid:uuidv4(),version,min_engine_version:[1,20,0]},
-    modules:[{type:"data",uuid:uuidv4(),version}]
+    manifest: {
+      format_version: 2,
+      header: {
+        name: packTitleEl.value,
+        description: packDescEl.value,
+        uuid: crypto.randomUUID(),
+        version: [1, 0, 0],
+        min_engine_version: [1, 20, 0]
+      },
+      modules: [
+        {
+          type: "data",
+          uuid: crypto.randomUUID(),
+          version: [1, 0, 0]
+        }
+      ]
+    }
   };
 }
 
-exportBtn.addEventListener("click", async()=>{
-  exportMsg.textContent="";
-  const title=packTitleEl.value.trim();
-  if(!title){setExportMsg("タイトル必須",true);return;}
-  if(functions.length===0){setExportMsg("function 必須",true);return;}
-  const safeTitle=sanitizeName(title)||"behavior_pack";
-  const manifest=buildManifest();
-  const zip=new JSZip();
-  const bp=zip.folder(safeTitle);
-  bp.file("manifest.json",JSON.stringify(manifest,null,2));
-  const funcsDir=bp.folder("functions");
-  functions.forEach(f=>funcsDir.file(`${f.name}.mcfunction`,f.body+"\n"));
-  const iconFile=packIconEl.files&&packIconEl.files[0];
-  if(iconFile){
-    const buf=await fileToArrayBuffer(iconFile);
-    bp.file("pack_icon.png",buf);
-  }
-  const fileName=`${safeTitle}.mcaddon`;
+exportBtn.addEventListener("click", async () => {
+  setExportMsg("", false);
+  const title = (packTitleEl.value || "").trim();
+  if (!title) { setExportMsg("タイトルは必須です。", true); return; }
+  if (functions.length === 0) { setExportMsg("function を1つ以上追加してください。", true); return; }
 
-  // iOS Safari 対応
-  if(/iPad|iPhone|iPod/.test(navigator.userAgent)){
-    const base64=await zip.generateAsync({type:"base64"});
-    const link=document.createElement("a");
-    link.href="data:application/zip;base64,"+base64;
-    link.download=fileName;
+  const safeTitle = sanitizeName(title) || "behavior_pack";
+  const { manifest } = buildManifest();
+  const zip = new JSZip();
+
+  const bp = zip.folder(safeTitle);
+  bp.file("manifest.json", JSON.stringify(manifest, null, 2));
+  const funcsDir = bp.folder("functions");
+  functions.forEach(f => funcsDir.file(`${f.name}.mcfunction`, f.body + "\n"));
+
+  const iconFile = packIconEl.files && packIconEl.files[0];
+  if (iconFile) {
+    const buf = await fileToArrayBuffer(iconFile);
+    bp.file("pack_icon.png", buf);
+  }
+
+  const fileName = `${safeTitle}.mcaddon`;
+
+  if (/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream) {
+    const base64 = await zip.generateAsync({ type: "base64" });
+    const link = document.createElement("a");
+    link.href = "data:application/zip;base64," + base64;
+    link.download = fileName;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    setExportMsg(`iOS用に ${fileName} を保存しました。`,false);
+    setExportMsg(`iOS用にBase64リンクから ${fileName} を保存しました。`, false);
   } else {
-    const blob=await zip.generateAsync({type:"blob"});
-    saveAs(blob,fileName);
-    setExportMsg(`${fileName} を作成しました。`,false);
+    const blob = await zip.generateAsync({ type: "blob" });
+    saveAs(blob, fileName);
+    setExportMsg(`.mcaddon を作成しました：${fileName} をダウンロードしてください。`, false);
   }
 });
-
-function setExportMsg(msg,err){exportMsg.textContent=msg;exportMsg.className=err?"error":"success";}
-function fileToArrayBuffer(file){
-  return new Promise((res,rej)=>{
-    const fr=new FileReader();
-    fr.onload=()=>res(fr.result);
-    fr.onerror=rej;
-    fr.readAsArrayBuffer(file);
-  });
-}
 </script>
+
 </body>
 </html>
