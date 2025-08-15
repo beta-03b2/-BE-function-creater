@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Minecraft BE ビヘイビアーパック Functionメーカー</title>
+<!-- JSZip & FileSaver -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" integrity="sha512-MPR4eZ5aR6gHq7rQ83d5AM9k1Gx9A2kKXW+ZgQz6g3mJENa6XfJ0Qd3c2Fjhb2c1hF1sJ6Z2vE5k3y0r4+6wNw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js" integrity="sha512-5x3Jx6JQG2kG4S8pYgkq1r3sZ2fQ0n2x1wqg3xjW6R8iH2K7rL1xYjXb8E1s6M2i7o3g1r9z6wJ6wNw4kPqF0A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<style>
+  :root { --gap:12px; --radius:10px; }
+  * { box-sizing:border-box; }
+  body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans JP", Arial, sans-serif; margin:0; padding:24px; background:#0e0f12; color:#e7e9ee; }
+  h1 { font-size:1.4rem; margin:0 0 10px; }
+  .app { max-width:980px; margin:0 auto; display:grid; gap:var(--gap); }
+  .card { background:#16181d; border:1px solid #2a2f39; border-radius:var(--radius); padding:16px; }
+  label { display:block; font-weight:600; margin-bottom:6px; }
+  input[type="text"], textarea { width:100%; background:#0f1115; color:#e7e9ee; border:1px solid #2a2f39; border-radius:8px; padding:10px 12px; outline:none; }
+  textarea { min-height:110px; resize:vertical; line-height:1.35; }
+  input[type="file"] { display:block; }
+  .row { display:grid; gap:var(--gap); grid-template-columns:1fr; }
+  @media (min-width: 880px) { .row.two { grid-template-columns: 1fr 1fr; } }
+  .hint { font-size:.9rem; color:#98a2b3; }
+  .req::after { content:" *"; color:#ff6b6b; }
+  .btn { border:1px solid #2a2f39; background:#1b1f28; color:#e7e9ee; padding:10px 14px; border-radius:8px; cursor:pointer; display:inline-flex; align-items:center; gap:8px; }
+  .btn:hover { background:#222734; }
+  .btn.primary { background:#2a6ef7; border-color:#2a6ef7; }
+  .btn.primary:hover { filter:brightness(1.1); }
+  .btn.ghost { background:transparent; }
+  .btn.icon { padding:8px; border-radius:6px; }
+  .toolbar { display:flex; gap:10px; flex-wrap:wrap; }
+  .functions { display:grid; gap:10px; }
+  .func-item { border:1px solid #2a2f39; border-radius:10px; padding:12px; background:#0f1115; display:grid; gap:8px; }
+  .func-head { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+  .func-name { font-weight:700; word-break:break-all; }
+  .icons { display:flex; gap:6px; }
+  .badge { background:#2a2f39; padding:2px 8px; border-radius:999px; font-size:.8rem; }
+  .error { color:#ff6b6b; font-weight:700; }
+  .success { color:#4ade80; font-weight:700; }
+  .list-empty { color:#98a2b3; }
+  .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Noto Sans Mono", monospace; }
+  .spacer { height:6px; }
+</style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <h1>ビヘイビアーパック Function メーカー（.mcaddon 出力）</h1>
+      <div class="hint">タイトルと function（1つ以上）は必須です。画像と説明は任意です。</div>
+    </header>
+
+    <section class="card">
+      <div class="row two">
+        <div>
+          <label class="req">パックのタイトル</label>
+          <input type="text" id="packTitle" placeholder="例）My Function Pack" />
+        </div>
+        <div>
+          <label>説明（任意）</label>
+          <input type="text" id="packDesc" placeholder="例）コマンド自動化用の関数集" />
+          <div class="hint">manifest.json の description に入ります</div>
+        </div>
+      </div>
+      <div class="spacer"></div>
+      <div class="row two">
+        <div>
+          <label>アイコン画像（任意）</label>
+          <input type="file" id="packIcon" accept="image/*" />
+          <div class="hint">入れると <code class="mono">pack_icon.png</code> として同梱されます（推奨 256×256）</div>
+        </div>
+        <div>
+          <label>パックのバージョン</label>
+          <input type="text" id="packVersion" value="1.0.0" />
+          <div class="hint">「メジャー.マイナー.パッチ」（例：1.0.0）</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2 style="margin-top:0">function の作成</h2>
+      <div class="row">
+        <div>
+          <label class="req">コマンド名（ファイル名）</label>
+          <input type="text" id="funcName" placeholder="例）start" />
+          <div class="hint">英数字・アンダーバー推奨。拡張子は自動で <code class="mono">.mcfunction</code> になります。</div>
+        </div>
+        <div>
+          <label class="req">コマンド内容（1行に1コマンド）</label>
+          <textarea id="funcBody" placeholder="例）\n# 初期化\ngamemode s @a\nclear @a"></textarea>
+        </div>
+        <div class="toolbar">
+          <button class="btn" id="addFuncBtn">＋ 追加</button>
+          <span id="funcMsg"></span>
+        </div>
+      </div>
+
+      <div class="spacer"></div>
+      <div class="functions" id="funcList">
+        <div class="list-empty">まだ function がありません。上のフォームから追加してください。</div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="toolbar">
+        <button class="btn primary" id="exportBtn">ファイルをインポート（.mcaddon を作成）</button>
+        <button class="btn ghost" id="downloadManifestBtn">manifest.json を確認（ダウンロード）</button>
+      </div>
+      <div id="exportMsg" class="hint" style="margin-top:8px;"></div>
+    </section>
+
+    <footer class="hint">
+      © あなたのローカルで完結／データは外部に送信されません。Minecraft Bedrock Edition 用。
+    </footer>
+  </div>
+
+<script>
+/* ---------- ユーティリティ ---------- */
+const $ = (sel) => document.querySelector(sel);
+const sanitizeName = (s) => (s || "")
+  .trim()
+  .toLowerCase()
+  .replace(/\s+/g, "_")
+  .replace(/[^a-z0-9_\-\.]/g, "_")
+  .replace(/_+/g, "_")
+  .replace(/^_+|_+$/g, "");
+const parseVersion = (v) => {
+  const parts = (v || "1.0.0").split(".").map(n => parseInt(n,10));
+  return [parts[0]||1, parts[1]||0, parts[2]||0];
+};
+const uuidv4 = () => (crypto.randomUUID ? crypto.randomUUID() :
+  "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,function(c){
+    const r=Math.random()*16|0,v=c==="x"?r:(r&0x3|0x8); return v.toString(16);
+  })
+);
+
+/* ---------- 状態 ---------- */
+let functions = []; // {id, name, body}
+let seq = 0;
+
+/* ---------- DOM 参照 ---------- */
+const packTitleEl = $("#packTitle");
+const packDescEl = $("#packDesc");
+const packIconEl = $("#packIcon");
+const packVersionEl = $("#packVersion");
+const funcNameEl = $("#funcName");
+const funcBodyEl = $("#funcBody");
+const addFuncBtn = $("#addFuncBtn");
+const funcListEl = $("#funcList");
+const funcMsgEl = $("#funcMsg");
+const exportBtn = $("#exportBtn");
+const exportMsg = $("#exportMsg");
+const downloadManifestBtn = $("#downloadManifestBtn");
+
+/* ---------- function 追加 ---------- */
+addFuncBtn.addEventListener("click", () => {
+  funcMsgEl.textContent = "";
+  funcMsgEl.className = "";
+  let name = sanitizeName(funcNameEl.value);
+  const body = (funcBodyEl.value || "").trim();
+
+  if (!name) { showFuncMsg("コマンド名は必須です。", true); return; }
+  if (!body) { showFuncMsg("コマンド内容は必須です。", true); return; }
+
+  // 重複名は連番で回避
+  name = ensureUniqueName(name);
+
+  functions.push({ id: ++seq, name, body });
+  funcNameEl.value = "";
+  funcBodyEl.value = "";
+  renderFunctions();
+  showFuncMsg(`追加しました：${name}.mcfunction`, false);
+});
+
+function ensureUniqueName(name) {
+  let base = name.replace(/\.mcfunction$/i,"");
+  let candidate = base;
+  let i = 2;
+  const exists = (n) => functions.some(f => f.name === n);
+  while (exists(candidate)) { candidate = `${base}_${i++}`; }
+  return candidate;
+}
+
+function showFuncMsg(msg, isErr) {
+  funcMsgEl.textContent = msg;
+  funcMsgEl.className = isErr ? "error" : "success";
+}
+
+/* ---------- function リスト描画 & 操作 ---------- */
+function renderFunctions() {
+  funcListEl.innerHTML = "";
+  if (functions.length === 0) {
+    const div = document.createElement("div");
+    div.className = "list-empty";
+    div.textContent = "まだ function がありません。上のフォームから追加してください。";
+    funcListEl.appendChild(div);
+    return;
+  }
+
+  functions.forEach(f => {
+    const item = document.createElement("div");
+    item.className = "func-item";
+    item.dataset.id = f.id;
+
+    const head = document.createElement("div");
+    head.className = "func-head";
+
+    const left = document.createElement("div");
+    left.innerHTML = `<span class="func-name">${f.name}.mcfunction</span> <span class="badge">行数: ${f.body.split(/\r?\n/).length}</span>`;
+
+    const right = document.createElement("div");
+    right.className = "icons";
+    const editBtn = iconBtn("✏️", "編集");
+    const delBtn = iconBtn("🗑️", "削除");
+    right.appendChild(editBtn);
+    right.appendChild(delBtn);
+
+    editBtn.addEventListener("click", () => startEdit(f.id));
+    delBtn.addEventListener("click", () => deleteFunc(f.id));
+
+    head.appendChild(left);
+    head.appendChild(right);
+
+    const pre = document.createElement("pre");
+    pre.className = "mono";
+    pre.style.margin = "0";
+    pre.textContent = f.body;
+
+    item.appendChild(head);
+    item.appendChild(pre);
+    funcListEl.appendChild(item);
+  });
+}
+
+function iconBtn(text, title) {
+  const b = document.createElement("button");
+  b.className = "btn icon";
+  b.title = title;
+  b.textContent = text;
+  return b;
+}
+
+function startEdit(id) {
+  const idx = functions.findIndex(f => f.id === id);
+  if (idx === -1) return;
+  const f = functions[idx];
+
+  const item = [...funcListEl.children].find(el => +el.dataset.id === id);
+  if (!item) return;
+  item.innerHTML = "";
+
+  const nameIn = document.createElement("input");
+  nameIn.type = "text";
+  nameIn.value = f.name;
+  nameIn.className = "mono";
+  nameIn.style.width = "100%";
+
+  const bodyIn = document.createElement("textarea");
+  bodyIn.value = f.body;
+  bodyIn.className = "mono";
+  bodyIn.style.minHeight = "150px";
+
+  const bar = document.createElement("div");
+  bar.className = "toolbar";
+  const saveBtn = document.createElement("button");
+  saveBtn.className = "btn";
+  saveBtn.textContent = "💾 保存";
+  const cancelBtn = document.createElement("button");
+  cancelBtn.className = "btn ghost";
+  cancelBtn.textContent = "キャンセル";
+
+  saveBtn.addEventListener("click", () => {
+    let newName = sanitizeName(nameIn.value);
+    const newBody = (bodyIn.value || "").trim();
+    if (!newName) { alert("コマンド名は必須です"); return; }
+    if (!newBody) { alert("コマンド内容は必須です"); return; }
+
+    // 他と重複しないよう調整
+    if (functions.some(ff => ff.id !== id && ff.name === newName)) {
+      newName = ensureUniqueName(newName);
+      alert(`他の function と重複したため、名前を '${newName}' に変更しました。`);
+    }
+    functions[idx] = { ...f, name: newName, body: newBody };
+    renderFunctions();
+  });
+
+  cancelBtn.addEventListener("click", renderFunctions);
+
+  bar.appendChild(saveBtn);
+  bar.appendChild(cancelBtn);
+
+  item.className = "func-item";
+  const nameLabel = document.createElement("label");
+  nameLabel.textContent = "コマンド名";
+  const bodyLabel = document.createElement("label");
+  bodyLabel.textContent = "コマンド内容";
+
+  item.appendChild(nameLabel);
+  item.appendChild(nameIn);
+  item.appendChild(bodyLabel);
+  item.appendChild(bodyIn);
+  item.appendChild(bar);
+}
+
+function deleteFunc(id) {
+  if (!confirm("この function を削除しますか？")) return;
+  functions = functions.filter(f => f.id !== id);
+  renderFunctions();
+}
+
+/* ---------- manifest 生成 ---------- */
+function buildManifest() {
+  const name = (packTitleEl.value || "").trim();
+  const desc = (packDescEl.value || "").trim();
+  const version = parseVersion(packVersionEl.value);
+
+  const headerUUID = uuidv4();
+  const moduleUUID = uuidv4();
+
+  const manifest = {
+    format_version: 2,
+    header: {
+      name,
+      description: desc || name,
+      uuid: headerUUID,
+      version,
+      min_engine_version: [1, 20, 0]
+    },
+    modules: [
+      {
+        type: "data",
+        uuid: moduleUUID,
+        version
+      }
+    ]
+  };
+  return { manifest, headerUUID, moduleUUID };
+}
+
+/* ---------- .mcaddon 出力 ---------- */
+exportBtn.addEventListener("click", async () => {
+  exportMsg.textContent = "";
+  const title = (packTitleEl.value || "").trim();
+  if (!title) { setExportMsg("タイトルは必須です。", true); return; }
+  if (functions.length === 0) { setExportMsg("function を1つ以上追加してください。", true); return; }
+
+  const safeTitle = sanitizeName(title) || "behavior_pack";
+  const { manifest } = buildManifest();
+  const zip = new JSZip();
+
+  // .mcaddon 内に1つのビヘイビアーパックを含める（慣例でフォルダ名を使用）
+  const bpFolderName = safeTitle || "behavior_pack";
+  const bp = zip.folder(bpFolderName);
+
+  // manifest.json
+  bp.file("manifest.json", JSON.stringify(manifest, null, 2));
+
+  // functions
+  const funcsDir = bp.folder("functions");
+  functions.forEach(f => {
+    funcsDir.file(`${f.name}.mcfunction`, f.body + "\n");
+  });
+
+  // pack_icon.png（任意）
+  const iconFile = packIconEl.files && packIconEl.files[0];
+  if (iconFile) {
+    const buf = await fileToArrayBuffer(iconFile);
+    bp.file("pack_icon.png", buf);
+  }
+
+  // 生成 & ダウンロード（拡張子は .mcaddon）
+  const blob = await zip.generateAsync({ type: "blob" });
+  const fileName = `${safeTitle}.mcaddon`;
+  saveAs(blob, fileName);
+  setExportMsg(`.mcaddon を作成しました：${fileName} をダウンロードしてください。`, false);
+});
+
+downloadManifestBtn.addEventListener("click", () => {
+  const title = (packTitleEl.value || "").trim() || "behavior_pack";
+  const { manifest } = buildManifest();
+  const blob = new Blob([JSON.stringify(manifest, null, 2)], { type: "application/json" });
+  saveAs(blob, `${sanitizeName(title)}_manifest.json`);
+});
+
+function setExportMsg(msg, isErr) {
+  exportMsg.textContent = msg;
+  exportMsg.className = isErr ? "error" : "success";
+}
+
+function fileToArrayBuffer(file) {
+  return new Promise((res, rej) => {
+    const fr = new FileReader();
+    fr.onload = () => res(fr.result);
+    fr.onerror = rej;
+    fr.readAsArrayBuffer(file);
+  });
+}
+
+/* 初期表示 */
+renderFunctions();
+</script>
+</body>
+</html>
