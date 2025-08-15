@@ -7,7 +7,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 <style>
-/* --- 省略なし（スタイルは前回のまま） --- */
 :root { --gap:12px; --radius:10px; }
 * { box-sizing:border-box; }
 body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans JP", Arial, sans-serif; margin:0; padding:24px; background:#0e0f12; color:#e7e9ee; }
@@ -82,11 +81,11 @@ input[type="file"] { display:block; }
       <div class="row">
         <div>
           <label class="req">コマンド名（ファイル名）</label>
-          <input type="text" id="funcName" placeholder="例）start" />
+          <input type="text" id="funcName" placeholder="例）reset" />
         </div>
         <div>
           <label class="req">コマンド内容（1行に1コマンド）</label>
-          <textarea id="funcBody"></textarea>
+          <textarea id="funcBody" placeholder="clear @a&#10;tp @a 0 0 0&#10;gamemode a @a"></textarea>
         </div>
         <div class="toolbar">
           <button class="btn" id="addFuncBtn">＋ 追加</button>
@@ -119,6 +118,7 @@ const uuidv4 = () => crypto.randomUUID ? crypto.randomUUID() :
 
 let functions = [];
 let seq=0;
+let editId=null;
 
 const packTitleEl=$("#packTitle");
 const packDescEl=$("#packDesc");
@@ -134,13 +134,39 @@ const exportMsg=$("#exportMsg");
 $("#addFuncBtn").addEventListener("click",()=>{
   let name=sanitizeName(funcNameEl.value);
   let body=(funcBodyEl.value||"").trim();
+
+  // 10000行制限
+  let lineCount = body.split("\n").length;
+  if(lineCount > 10000){
+    showFuncMsg("限界です（10000行まで）",true);
+    return;
+  }
+
+  // /削除
+  body = body.split("\n").map(line=>line.replace(/^\/+/,"")).join("\n");
+
   if(!name){showFuncMsg("コマンド名必須",true);return;}
   if(!body){showFuncMsg("コマンド内容必須",true);return;}
-  name=ensureUniqueName(name);
-  functions.push({id:++seq,name,body});
+
+  if(editId !== null){
+    // 編集モード
+    let idx = functions.findIndex(f => f.id === editId);
+    if(idx > -1){
+      functions[idx].name = name;
+      functions[idx].body = body;
+    }
+    editId = null;
+    $("#addFuncBtn").textContent = "＋ 追加";
+    showFuncMsg(`更新: ${name}.mcfunction`,false);
+  } else {
+    // 新規追加
+    name=ensureUniqueName(name);
+    functions.push({id:++seq,name,body});
+    showFuncMsg(`追加: ${name}.mcfunction`,false);
+  }
+  
   funcNameEl.value=""; funcBodyEl.value="";
   renderFunctions();
-  showFuncMsg(`追加: ${name}.mcfunction`,false);
 });
 
 function ensureUniqueName(name){
@@ -161,9 +187,31 @@ function renderFunctions(){
   functions.forEach(f=>{
     const div=document.createElement("div");
     div.className="func-item";
-    div.innerHTML=`<div class="func-head"><span class="func-name">${f.name}.mcfunction</span></div><pre class="mono">${f.body}</pre>`;
+    div.innerHTML=`
+      <div class="func-head">
+        <span class="func-name">${f.name}.mcfunction</span>
+        <div class="icons">
+          <button class="btn" onclick="editFunction(${f.id})">編集</button>
+          <button class="btn" onclick="deleteFunction(${f.id})">削除</button>
+        </div>
+      </div>
+      <pre class="mono">${f.body}</pre>`;
     funcListEl.appendChild(div);
   });
+}
+
+window.editFunction = function(id){
+  let f = functions.find(x => x.id === id);
+  if(!f) return;
+  funcNameEl.value = f.name;
+  funcBodyEl.value = f.body;
+  editId = id;
+  $("#addFuncBtn").textContent = "保存";
+}
+
+window.deleteFunction = function(id){
+  functions = functions.filter(f => f.id !== id);
+  renderFunctions();
 }
 
 function buildManifest(){
@@ -196,7 +244,6 @@ exportBtn.addEventListener("click", async()=>{
   }
   const fileName=`${safeTitle}.mcaddon`;
 
-  // iOS Safari 対応
   if(/iPad|iPhone|iPod/.test(navigator.userAgent)){
     const base64=await zip.generateAsync({type:"base64"});
     const link=document.createElement("a");
