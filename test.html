@@ -1,0 +1,452 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Minecraft BE ビヘイビアーパック Functionメーカー</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+<style>
+:root { --gap:12px; --radius:10px; }
+* { box-sizing:border-box; }
+body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans JP", Arial, sans-serif; margin:0; padding:24px; background:#0e0f12; color:#e7e9ee; }
+h1 { font-size:1.4rem; margin:0 0 10px; }
+.app { max-width:980px; margin:0 auto; display:grid; gap:var(--gap); }
+.card { background:#16181d; border:1px solid #2a2f39; border-radius:var(--radius); padding:16px; }
+label { display:block; font-weight:600; margin-bottom:6px; }
+input[type="text"], textarea { width:100%; background:#0f1115; color:#e7e9ee; border:1px solid #2a2f39; border-radius:8px; padding:10px 12px; outline:none; }
+textarea { min-height:110px; resize:vertical; line-height:1.35; }
+input[type="file"] { display:block; }
+.row { display:grid; gap:var(--gap); grid-template-columns:1fr; }
+@media (min-width: 880px) { .row.two { grid-template-columns: 1fr 1fr; } }
+.hint { font-size:.9rem; color:#98a2b3; }
+.req::after { content:" *"; color:#ff6b6b; }
+.btn { border:1px solid #2a2f39; background:#1b1f28; color:#e7e9ee; padding:10px 14px; border-radius:8px; cursor:pointer; display:inline-flex; align-items:center; gap:8px; }
+.btn:hover { background:#222734; }
+.btn.primary { background:#2a6ef7; border-color:#2a6ef7; }
+.btn.primary:hover { filter:brightness(1.1); }
+.btn.ghost { background:transparent; }
+.btn.icon { padding:8px; border-radius:6px; }
+.toolbar { display:flex; gap:10px; flex-wrap:wrap; }
+.functions { display:grid; gap:10px; }
+.func-item { border:1px solid #2a2f39; border-radius:10px; padding:12px; background:#0f1115; display:grid; gap:8px; }
+.func-head { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.func-name { font-weight:700; word-break:break-all; }
+.icons { display:flex; gap:6px; }
+.badge { background:#2a2f39; padding:2px 8px; border-radius:999px; font-size:.8rem; }
+.error { color:#ff6b6b; font-weight:700; }
+.success { color:#4ade80; font-weight:700; }
+.list-empty { color:#98a2b3; }
+.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Noto Sans Mono", monospace; }
+.spacer { height:6px; }
+
+#menuButton {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  font-size: 24px;
+  cursor: pointer;
+  z-index: 1001;
+}
+
+#sideMenu {
+  position: fixed;
+  top: 0;
+  left: -260px;
+  width: 250px;
+  height: 100%;
+  background: #222;
+  color: #fff;
+  padding: 20px;
+  box-shadow: 2px 0 5px rgba(0,0,0,0.3);
+  transition: left 0.3s;
+  z-index: 1000;
+}
+
+#sideMenu.open {
+  left: 0;
+}
+
+#packList {
+  list-style: none;
+  padding: 0;
+}
+
+#packList li {
+  display: flex;
+  justify-content: space-between;
+  padding: 5px 0;
+  cursor: pointer;
+}
+
+#packList li span {
+  flex-grow: 1;
+}
+
+#packList li button {
+  background: none;
+  border: none;
+  color: red;
+  cursor: pointer;
+}
+</style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <h1>ビヘイビアーパック Function メーカー（.mcaddon 出力）</h1>
+      <div class="hint">タイトルと function（1つ以上）は必須です。画像と説明は任意です。</div>
+    </header>
+
+    <!-- パック情報 -->
+    <section class="card">
+      <div class="row two">
+        <div>
+          <label class="req">パックのタイトル</label>
+          <input type="text" id="packTitle" placeholder="例）My Function Pack" />
+        </div>
+        <div>
+          <label>説明（任意）</label>
+          <input type="text" id="packDesc" placeholder="例）コマンド自動化用の関数集" />
+          <div class="hint">manifest.json の description に入ります</div>
+        </div>
+      </div>
+      <div class="spacer"></div>
+      <div class="row two">
+        <div>
+          <label>アイコン画像（任意）</label>
+          <input type="file" id="packIcon" accept="image/*" />
+          <div class="hint">入れると <code class="mono">pack_icon.png</code> として同梱されます（推奨 256×256）</div>
+        </div>
+        <div>
+          <label>パックのバージョン</label>
+          <input type="text" id="packVersion" value="1.0.0" />
+        </div>
+      </div>
+    </section>
+
+    <!-- function作成 -->
+    <section class="card">
+      <h2 style="margin-top:0">function の作成</h2>
+      <div class="row">
+        <div>
+          <label class="req">コマンド名（ファイル名）</label>
+          <input type="text" id="funcName" placeholder="例）reset" />
+        </div>
+        <div>
+          <label class="req">コマンド内容（1行に1コマンド）</label>
+          <textarea id="funcBody" placeholder="clear @a&#10;tp @a 0 0 0&#10;gamemode a @a"></textarea>
+        </div>
+        <div class="toolbar">
+          <button class="btn" id="addFuncBtn">＋ 追加</button>
+          <span id="funcMsg"></span>
+        </div>
+      </div>
+      <div class="spacer"></div>
+      <div class="functions" id="funcList">
+        <div class="list-empty">まだ function がありません。</div>
+      </div>
+    </section>
+
+    <!-- 出力 -->
+    <section class="card">
+      <div class="toolbar">
+        <button class="btn primary" id="exportBtn">ファイルをインポート（.mcaddon を作成）</button>
+      </div>
+      <div id="exportMsg" class="hint" style="margin-top:8px;"></div>
+    </section>
+  </div>
+  <!-- ハンバーガーメニュー -->
+<div id="menuButton">☰</div>
+<div id="sideMenu">
+  <h2>保存済みパック</h2>
+  <ul id="packList"></ul>
+  <button id="newPackBtn">＋ 新規作成</button>
+</div>
+
+<script>
+const $ = sel => document.querySelector(sel);
+const sanitizeName = s => (s||"").trim().toLowerCase().replace(/\s+/g,"_").replace(/[^a-z0-9_\-\.]/g,"_");
+const parseVersion = v => (v||"1.0.0").split(".").map(n=>parseInt(n)||0);
+const uuidv4 = () => crypto.randomUUID ? crypto.randomUUID() :
+  "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,c=>{
+    const r=Math.random()*16|0,v=c==="x"?r:(r&0x3|0x8);return v.toString(16);
+  });
+
+let functions = [];
+let seq=0;
+let editId=null;
+
+const packTitleEl=$("#packTitle");
+const packDescEl=$("#packDesc");
+const packIconEl=$("#packIcon");
+const packVersionEl=$("#packVersion");
+const funcNameEl=$("#funcName");
+const funcBodyEl=$("#funcBody");
+const funcListEl=$("#funcList");
+const funcMsgEl=$("#funcMsg");
+const exportBtn=$("#exportBtn");
+const exportMsg=$("#exportMsg");
+
+$("#addFuncBtn").addEventListener("click",()=>{
+  let name=sanitizeName(funcNameEl.value);
+  let body=(funcBodyEl.value||"").trim();
+
+  // 10000行制限
+  let lineCount = body.split("\n").length;
+  if(lineCount > 10000){
+    showFuncMsg("限界です（10000行まで）",true);
+    return;
+  }
+
+  // /削除
+  body = body.split("\n").map(line=>line.replace(/^\/+/,"")).join("\n");
+
+  if(!name){showFuncMsg("コマンド名必須",true);return;}
+  if(!body){showFuncMsg("コマンド内容必須",true);return;}
+
+  if(editId !== null){
+    // 編集モード
+    let idx = functions.findIndex(f => f.id === editId);
+    if(idx > -1){
+      functions[idx].name = name;
+      functions[idx].body = body;
+    }
+    editId = null;
+    $("#addFuncBtn").textContent = "＋ 追加";
+    showFuncMsg(`更新: ${name}.mcfunction`,false);
+  } else {
+    // 新規追加
+    name=ensureUniqueName(name);
+    functions.push({id:++seq,name,body});
+    showFuncMsg(`追加: ${name}.mcfunction`,false);
+  }
+  
+  funcNameEl.value=""; funcBodyEl.value="";
+  renderFunctions();
+});
+
+function ensureUniqueName(name){
+  let base=name.replace(/\.mcfunction$/i,"");
+  let cand=base, i=2;
+  while(functions.some(f=>f.name===cand)){cand=`${base}_${i++}`;}
+  return cand;
+}
+
+function showFuncMsg(msg,err){funcMsgEl.textContent=msg;funcMsgEl.className=err?"error":"success";}
+
+function renderFunctions(){
+  funcListEl.innerHTML="";
+  if(functions.length===0){
+    funcListEl.innerHTML='<div class="list-empty">まだ function がありません。</div>';
+    return;
+  }
+  functions.forEach(f=>{
+    const div=document.createElement("div");
+    div.className="func-item";
+    div.innerHTML=`
+      <div class="func-head">
+        <span class="func-name">${f.name}.mcfunction</span>
+        <div class="icons">
+          <button class="btn" onclick="editFunction(${f.id})">編集</button>
+          <button class="btn" onclick="deleteFunction(${f.id})">削除</button>
+        </div>
+      </div>
+      <pre class="mono">${f.body}</pre>`;
+    funcListEl.appendChild(div);
+  });
+}
+
+window.editFunction = function(id){
+  let f = functions.find(x => x.id === id);
+  if(!f) return;
+  funcNameEl.value = f.name;
+  funcBodyEl.value = f.body;
+  editId = id;
+  $("#addFuncBtn").textContent = "保存";
+}
+
+window.deleteFunction = function(id){
+  functions = functions.filter(f => f.id !== id);
+  renderFunctions();
+}
+
+function buildManifest(){
+  const name=packTitleEl.value.trim();
+  const desc=packDescEl.value.trim()||name;
+  const version=parseVersion(packVersionEl.value);
+  return {
+    format_version:2,
+    header:{name,description:desc,uuid:uuidv4(),version,min_engine_version:[1,20,0]},
+    modules:[{type:"data",uuid:uuidv4(),version}]
+  };
+}
+
+exportBtn.addEventListener("click", async()=>{
+  exportMsg.textContent="";
+  const title=packTitleEl.value.trim();
+  if(!title){setExportMsg("タイトル必須",true);return;}
+  if(functions.length===0){setExportMsg("function 必須",true);return;}
+  const safeTitle=sanitizeName(title)||"behavior_pack";
+  const manifest=buildManifest();
+  const zip=new JSZip();
+  const bp=zip.folder(safeTitle);
+  bp.file("manifest.json",JSON.stringify(manifest,null,2));
+  const funcsDir=bp.folder("functions");
+  functions.forEach(f=>funcsDir.file(`${f.name}.mcfunction`,f.body+"\n"));
+  const iconFile=packIconEl.files&&packIconEl.files[0];
+  if(iconFile){
+    const buf=await fileToArrayBuffer(iconFile);
+    bp.file("pack_icon.png",buf);
+  }
+  const fileName=`${safeTitle}.mcaddon`;
+
+  if(/iPad|iPhone|iPod/.test(navigator.userAgent)){
+    const base64=await zip.generateAsync({type:"base64"});
+    const link=document.createElement("a");
+    link.href="data:application/zip;base64,"+base64;
+    link.download=fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setExportMsg(`iOS用に ${fileName} を保存しました。`,false);
+  } else {
+    const blob=await zip.generateAsync({type:"blob"});
+    saveAs(blob,fileName);
+    setExportMsg(`${fileName} を作成しました。`,false);
+  }
+});
+
+function setExportMsg(msg,err){exportMsg.textContent=msg;exportMsg.className=err?"error":"success";}
+function fileToArrayBuffer(file){
+  return new Promise((res,rej)=>{
+    const fr=new FileReader();
+    fr.onload=()=>res(fr.result);
+    fr.onerror=rej;
+    fr.readAsArrayBuffer(file);
+  });
+}
+
+let db;
+let currentPackId = null;
+
+// IndexedDB 初期化
+function initDB() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open("BEFunctionPacks", 1);
+    request.onupgradeneeded = e => {
+      db = e.target.result;
+      if (!db.objectStoreNames.contains("packs")) {
+        db.createObjectStore("packs", { keyPath: "id" });
+      }
+      if (!db.objectStoreNames.contains("meta")) {
+        db.createObjectStore("meta", { keyPath: "key" });
+      }
+    };
+    request.onsuccess = e => {
+      db = e.target.result;
+      resolve();
+    };
+    request.onerror = reject;
+  });
+}
+
+// 保存
+function saveCurrentPack(data) {
+  if (!currentPackId) return;
+  const tx = db.transaction("packs", "readwrite");
+  tx.objectStore("packs").put({
+    id: currentPackId,
+    name: data.title || "無題",
+    functions: data.functions,
+    title: data.title,
+    updated: Date.now()
+  });
+  tx.oncomplete = loadPackList;
+}
+
+// 読み込み
+function loadPack(id) {
+  const tx = db.transaction("packs", "readonly");
+  tx.objectStore("packs").get(id).onsuccess = e => {
+    const pack = e.target.result;
+    if (pack) {
+      currentPackId = pack.id;
+      document.querySelector("#titleInput").value = pack.title;
+      document.querySelector("#functionInput").value = pack.functions;
+    }
+  };
+}
+
+// 一覧表示
+function loadPackList() {
+  const tx = db.transaction("packs", "readonly");
+  tx.objectStore("packs").getAll().onsuccess = e => {
+    const list = document.getElementById("packList");
+    list.innerHTML = "";
+    e.target.result.forEach(pack => {
+      const li = document.createElement("li");
+      const span = document.createElement("span");
+      span.textContent = pack.name;
+      span.onclick = () => loadPack(pack.id);
+      const del = document.createElement("button");
+      del.textContent = "🗑";
+      del.onclick = () => deletePack(pack.id);
+      li.appendChild(span);
+      li.appendChild(del);
+      list.appendChild(li);
+    });
+  };
+}
+
+function deletePack(id) {
+  const tx = db.transaction("packs", "readwrite");
+  tx.objectStore("packs").delete(id);
+  tx.oncomplete = loadPackList;
+}
+
+// 新規作成
+function newPack() {
+  currentPackId = Date.now().toString();
+  document.querySelector("#titleInput").value = "";
+  document.querySelector("#functionInput").value = "";
+  saveCurrentPack({ title: "", functions: "" });
+}
+
+// メニュー開閉
+document.getElementById("menuButton").onclick = () => {
+  document.getElementById("sideMenu").classList.toggle("open");
+};
+document.getElementById("newPackBtn").onclick = newPack;
+
+// 入力が変わるたび保存
+document.querySelector("#titleInput").addEventListener("input", () => {
+  saveCurrentPack({
+    title: document.querySelector("#titleInput").value,
+    functions: document.querySelector("#functionInput").value
+  });
+});
+document.querySelector("#functionInput").addEventListener("input", () => {
+  saveCurrentPack({
+    title: document.querySelector("#titleInput").value,
+    functions: document.querySelector("#functionInput").value
+  });
+});
+
+// 初期化
+initDB().then(() => {
+  loadPackList();
+  // 最後の pack を開く（なければ新規）
+  const tx = db.transaction("packs", "readonly");
+  tx.objectStore("packs").getAll().onsuccess = e => {
+    if (e.target.result.length > 0) {
+      const latest = e.target.result.sort((a,b)=>b.updated-a.updated)[0];
+      loadPack(latest.id);
+    } else {
+      newPack();
+    }
+  };
+});
+</script>
+</body>
+</html>
