@@ -39,65 +39,6 @@ input[type="file"] { display:block; }
 .list-empty { color:#98a2b3; }
 .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Noto Sans Mono", monospace; }
 .spacer { height:6px; }
-#menuButton {
-  position: fixed;
-  top: 15px;
-  left: 15px;
-  font-size: 30px;   /* 押しやすく大きく */
-  cursor: pointer;
-  z-index: 1001;
-  background: #333;
-  color: #fff;
-  padding: 10px 15px;
-  border-radius: 5px;
-  user-select: none;
-}
-
-#menuButton:hover {
-  background: #444;
-}
-
-#sideMenu {
-  position: fixed;
-  top: 0;
-  left: -260px;
-  width: 250px;
-  height: 100%;
-  background: #222;
-  color: #fff;
-  padding: 20px;
-  box-shadow: 2px 0 5px rgba(0,0,0,0.3);
-  transition: left 0.3s;
-  z-index: 1000;
-  overflow-y: auto;
-}
-
-#sideMenu.open {
-  left: 0;
-}
-
-#packList {
-  list-style: none;
-  padding: 0;
-}
-
-#packList li {
-  display: flex;
-  justify-content: space-between;
-  padding: 5px 0;
-  cursor: pointer;
-}
-
-#packList li span {
-  flex-grow: 1;
-}
-
-#packList li button {
-  background: none;
-  border: none;
-  color: red;
-  cursor: pointer;
-}
 </style>
 </head>
 <body>
@@ -165,13 +106,6 @@ input[type="file"] { display:block; }
       <div id="exportMsg" class="hint" style="margin-top:8px;"></div>
     </section>
   </div>
-  <!-- ハンバーガーメニュー -->
-<div id="menuButton">☰</div>
-<div id="sideMenu">
-  <h2>保存済みパック</h2>
-  <ul id="packList"></ul>
-  <button id="newPackBtn">＋ 新規作成</button>
-</div>
 
 <script>
 const $ = sel => document.querySelector(sel);
@@ -335,153 +269,191 @@ function fileToArrayBuffer(file){
     fr.readAsArrayBuffer(file);
   });
 }
-
-let db;
-let currentPackId = null;
-
-// IndexedDB 初期化
-function initDB() {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open("BEFunctionPacks", 1);
-    request.onupgradeneeded = e => {
-      db = e.target.result;
-      if (!db.objectStoreNames.contains("packs")) {
-        db.createObjectStore("packs", { keyPath: "id" });
-      }
-      if (!db.objectStoreNames.contains("meta")) {
-        db.createObjectStore("meta", { keyPath: "key" });
-      }
-    };
-    request.onsuccess = e => {
-      db = e.target.result;
-      resolve();
-    };
-    request.onerror = reject;
-  });
-}
-
-// 一覧表示
-function loadPackList() {
-  const tx = db.transaction("packs", "readonly");
-  tx.objectStore("packs").getAll().onsuccess = e => {
-    const list = document.getElementById("packList");
-    list.innerHTML = "";
-    e.target.result.forEach(pack => {
-      const li = document.createElement("li");
-      const span = document.createElement("span");
-      span.textContent = pack.name;
-      span.onclick = () => loadPack(pack.id);
-      const del = document.createElement("button");
-      del.textContent = "🗑";
-      del.onclick = () => deletePack(pack.id);
-      li.appendChild(span);
-      li.appendChild(del);
-      list.appendChild(li);
-    });
-  };
-}
-
-function deletePack(id) {
-  const tx = db.transaction("packs", "readwrite");
-  tx.objectStore("packs").delete(id);
-  tx.oncomplete = loadPackList;
-}
-
-// メニュー開閉
-document.getElementById("menuButton").onclick = () => {
-  document.getElementById("sideMenu").classList.toggle("open");
-};
-document.getElementById("newPackBtn").onclick = newPack;
-
-// 入力が変わるたび保存
-document.querySelector("#titleInput").addEventListener("input", () => {
-  saveCurrentPack({
-    title: document.querySelector("#titleInput").value,
-    functions: document.querySelector("#functionInput").value
-  });
-});
-document.querySelector("#functionInput").addEventListener("input", () => {
-  saveCurrentPack({
-    title: document.querySelector("#titleInput").value,
-    functions: document.querySelector("#functionInput").value
-  });
-});
-
-// 初期化
-initDB().then(() => {
-  loadPackList();
-  // 最後の pack を開く（なければ新規）
-  const tx = db.transaction("packs", "readonly");
-  tx.objectStore("packs").getAll().onsuccess = e => {
-    if (e.target.result.length > 0) {
-      const latest = e.target.result.sort((a,b)=>b.updated-a.updated)[0];
-      loadPack(latest.id);
-    } else {
-      newPack();
-    }
-  };
-});
-
-// 保存処理
-function saveCurrentPack(data) {
-  if (!currentPackId) return;
-  const tx = db.transaction("packs", "readwrite");
-  tx.objectStore("packs").put({
-    id: currentPackId,
-    name: data.title || "無題",
-    title: data.title,
-    description: data.description,
-    functions: data.functions,
-    updated: Date.now()
-  });
-  tx.oncomplete = loadPackList;
-}
-
-// 入力が変わるたび保存（タイトル・説明・関数）
-["#titleInput", "#descriptionInput", "#functionInput"].forEach(sel => {
-  const el = document.querySelector(sel);
-  if (el) {
-    el.addEventListener("input", () => {
-      saveCurrentPack({
-        title: document.querySelector("#titleInput").value,
-        description: document.querySelector("#descriptionInput").value,
-        functions: document.querySelector("#functionInput").value
-      });
-    });
-  }
-});
-
-// メニュー外クリックで閉じる
-document.addEventListener("click", e => {
-  const menu = document.getElementById("sideMenu");
-  const button = document.getElementById("menuButton");
-  if (menu.classList.contains("open") && !menu.contains(e.target) && !button.contains(e.target)) {
-    menu.classList.remove("open");
-  }
-});
-
-// 新規パック作成
-function newPack() {
-  currentPackId = Date.now().toString();
-  document.querySelector("#titleInput").value = "";
-  document.querySelector("#descriptionInput").value = "";
-  document.querySelector("#functionInput").value = "";
-  saveCurrentPack({ title: "", description: "", functions: "" });
-}
-
-// パック読み込み
-function loadPack(id) {
-  const tx = db.transaction("packs", "readonly");
-  tx.objectStore("packs").get(id).onsuccess = e => {
-    const pack = e.target.result;
-    if (pack) {
-      currentPackId = pack.id;
-      document.querySelector("#titleInput").value = pack.title || "";
-      document.querySelector("#descriptionInput").value = pack.description || "";
-      document.querySelector("#functionInput").value = pack.functions || "";
-    }
-  };
-}
 </script>
 </body>
 </html>
+
+<style>
+    /* ハンバーガーメニューアイコン */
+    #menuButton {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      font-size: 30px;
+      cursor: pointer;
+      z-index: 1001;
+    }
+
+    /* サイドメニュー */
+    #sideMenu {
+      position: fixed;
+      top: 0;
+      left: -250px;
+      width: 250px;
+      height: 100%;
+      background-color: #333;
+      color: white;
+      transition: left 0.3s;
+      z-index: 1000;
+    }
+
+    #sideMenu.open {
+      left: 0;
+    }
+
+    /* メニュー項目 */
+    #sideMenu ul {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    #sideMenu li {
+      padding: 10px;
+      cursor: pointer;
+    }
+
+    #sideMenu li:hover {
+      background-color: #444;
+    }
+
+    /* 入力フォーム */
+    input, textarea {
+      width: 100%;
+      padding: 8px;
+      margin: 5px 0;
+      box-sizing: border-box;
+    }
+  </style>
+
+
+  <!-- ハンバーガーメニューアイコン -->
+  <div id="menuButton">&#9776; メニュー</div>
+
+  <!-- サイドメニュー -->
+  <div id="sideMenu">
+    <ul id="packList">
+      <!-- パック一覧がここに表示されます -->
+    </ul>
+    <button onclick="newPack()">新規作成</button>
+  </div>
+
+  <script>
+    let currentPackId = null;
+    let db;
+
+    // IndexedDB 初期化
+    function initDB() {
+      return new Promise((resolve, reject) => {
+        const request = indexedDB.open("BEFunctionPacks", 1);
+        request.onupgradeneeded = e => {
+          db = e.target.result;
+          if (!db.objectStoreNames.contains("packs")) {
+            db.createObjectStore("packs", { keyPath: "id" });
+          }
+        };
+        request.onsuccess = e => {
+          db = e.target.result;
+          resolve();
+        };
+        request.onerror = reject;
+      });
+    }
+
+    // 保存
+    function saveCurrentPack() {
+      if (!currentPackId) currentPackId = Date.now().toString();
+      const data = {
+        id: currentPackId,
+        title: document.querySelector("#titleInput").value,
+        description: document.querySelector("#descriptionInput").value,
+        version: document.querySelector("#versionInput").value,
+        funcName: document.querySelector("#funcNameInput").value,
+        functions: document.querySelector("#functionInput").value,
+        updated: Date.now()
+      };
+      const tx = db.transaction("packs", "readwrite");
+      tx.objectStore("packs").put(data);
+      tx.oncomplete = loadPackList;
+    }
+
+    // パック一覧表示
+    function loadPackList() {
+      const tx = db.transaction("packs", "readonly");
+      tx.objectStore("packs").getAll().onsuccess = e => {
+        const list = document.getElementById("packList");
+        list.innerHTML = "";
+        e.target.result.sort((a,b)=>b.updated-a.updated).forEach(pack => {
+          const li = document.createElement("li");
+          const span = document.createElement("span");
+          span.textContent = pack.title || "無題";
+          span.onclick = () => loadPack(pack.id);
+          const del = document.createElement("button");
+          del.textContent = "🗑";
+          del.onclick = () => deletePack(pack.id);
+          li.appendChild(span);
+          li.appendChild(del);
+          list.appendChild(li);
+        });
+      };
+    }
+
+    // パック読み込み
+    function loadPack(id) {
+      const tx = db.transaction("packs", "readonly");
+      tx.objectStore("packs").get(id).onsuccess = e => {
+        const pack = e.target.result;
+        if (!pack) return;
+        currentPackId = pack.id;
+        document.querySelector("#titleInput").value = pack.title || "";
+        document.querySelector("#descriptionInput").value = pack.description || "";
+        document.querySelector("#versionInput").value = pack.version || "";
+        document.querySelector("#funcNameInput").value = pack.funcName || "";
+        document.querySelector("#functionInput").value = pack.functions || "";
+      };
+    }
+
+    // 新規作成
+    function newPack() {
+      currentPackId = Date.now().toString();
+      ["#titleInput","#descriptionInput","#versionInput","#funcNameInput","#functionInput"].forEach(sel=>{
+        const el = document.querySelector(sel);
+        if(el) el.value="";
+      });
+      saveCurrentPack();
+    }
+
+    // 削除
+    function deletePack(id) {
+      const tx = db.transaction("packs","readwrite");
+      tx.objectStore("packs").delete(id).oncomplete = loadPackList;
+    }
+
+    // メニュー開閉
+    const menu = document.getElementById("sideMenu");
+    const button = document.getElementById("menuButton");
+    button.onclick = ()=> menu.classList.toggle("open");
+    document.addEventListener("click", e=>{
+      if(menu.classList.contains("open") && !menu.contains(e.target) && !button.contains(e.target)){
+        menu.classList.remove("open");
+      }
+    });
+
+    // 入力監視で保存
+    ["#titleInput","#descriptionInput","#versionInput","#funcNameInput","#functionInput"].forEach(sel=>{
+      const el = document.querySelector(sel);
+      if(el) el.addEventListener("input", saveCurrentPack);
+    });
+
+    // 初期化
+    initDB().then(()=>{
+      loadPackList();
+      // 最終更新パックをロード
+      const tx = db.transaction("packs","readonly");
+      tx.objectStore("packs").getAll().onsuccess = e=>{
+        if(e.target.result.length>0){
+          const latest = e.target.result.sort((a,b)=>b.updated-a.updated)[0];
+          loadPack(latest.id);
+        } else newPack();
+      };
+    });
+  </script>
