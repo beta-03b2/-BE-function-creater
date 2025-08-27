@@ -39,14 +39,22 @@ input[type="file"] { display:block; }
 .list-empty { color:#98a2b3; }
 .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Noto Sans Mono", monospace; }
 .spacer { height:6px; }
-
 #menuButton {
   position: fixed;
-  top: 10px;
-  left: 10px;
-  font-size: 24px;
+  top: 15px;
+  left: 15px;
+  font-size: 30px;   /* 押しやすく大きく */
   cursor: pointer;
   z-index: 1001;
+  background: #333;
+  color: #fff;
+  padding: 10px 15px;
+  border-radius: 5px;
+  user-select: none;
+}
+
+#menuButton:hover {
+  background: #444;
 }
 
 #sideMenu {
@@ -61,6 +69,7 @@ input[type="file"] { display:block; }
   box-shadow: 2px 0 5px rgba(0,0,0,0.3);
   transition: left 0.3s;
   z-index: 1000;
+  overflow-y: auto;
 }
 
 #sideMenu.open {
@@ -351,33 +360,6 @@ function initDB() {
   });
 }
 
-// 保存
-function saveCurrentPack(data) {
-  if (!currentPackId) return;
-  const tx = db.transaction("packs", "readwrite");
-  tx.objectStore("packs").put({
-    id: currentPackId,
-    name: data.title || "無題",
-    functions: data.functions,
-    title: data.title,
-    updated: Date.now()
-  });
-  tx.oncomplete = loadPackList;
-}
-
-// 読み込み
-function loadPack(id) {
-  const tx = db.transaction("packs", "readonly");
-  tx.objectStore("packs").get(id).onsuccess = e => {
-    const pack = e.target.result;
-    if (pack) {
-      currentPackId = pack.id;
-      document.querySelector("#titleInput").value = pack.title;
-      document.querySelector("#functionInput").value = pack.functions;
-    }
-  };
-}
-
 // 一覧表示
 function loadPackList() {
   const tx = db.transaction("packs", "readonly");
@@ -403,14 +385,6 @@ function deletePack(id) {
   const tx = db.transaction("packs", "readwrite");
   tx.objectStore("packs").delete(id);
   tx.oncomplete = loadPackList;
-}
-
-// 新規作成
-function newPack() {
-  currentPackId = Date.now().toString();
-  document.querySelector("#titleInput").value = "";
-  document.querySelector("#functionInput").value = "";
-  saveCurrentPack({ title: "", functions: "" });
 }
 
 // メニュー開閉
@@ -447,6 +421,67 @@ initDB().then(() => {
     }
   };
 });
+
+// 保存処理
+function saveCurrentPack(data) {
+  if (!currentPackId) return;
+  const tx = db.transaction("packs", "readwrite");
+  tx.objectStore("packs").put({
+    id: currentPackId,
+    name: data.title || "無題",
+    title: data.title,
+    description: data.description,
+    functions: data.functions,
+    updated: Date.now()
+  });
+  tx.oncomplete = loadPackList;
+}
+
+// 入力が変わるたび保存（タイトル・説明・関数）
+["#titleInput", "#descriptionInput", "#functionInput"].forEach(sel => {
+  const el = document.querySelector(sel);
+  if (el) {
+    el.addEventListener("input", () => {
+      saveCurrentPack({
+        title: document.querySelector("#titleInput").value,
+        description: document.querySelector("#descriptionInput").value,
+        functions: document.querySelector("#functionInput").value
+      });
+    });
+  }
+});
+
+// メニュー外クリックで閉じる
+document.addEventListener("click", e => {
+  const menu = document.getElementById("sideMenu");
+  const button = document.getElementById("menuButton");
+  if (menu.classList.contains("open") && !menu.contains(e.target) && !button.contains(e.target)) {
+    menu.classList.remove("open");
+  }
+});
+
+// 新規パック作成
+function newPack() {
+  currentPackId = Date.now().toString();
+  document.querySelector("#titleInput").value = "";
+  document.querySelector("#descriptionInput").value = "";
+  document.querySelector("#functionInput").value = "";
+  saveCurrentPack({ title: "", description: "", functions: "" });
+}
+
+// パック読み込み
+function loadPack(id) {
+  const tx = db.transaction("packs", "readonly");
+  tx.objectStore("packs").get(id).onsuccess = e => {
+    const pack = e.target.result;
+    if (pack) {
+      currentPackId = pack.id;
+      document.querySelector("#titleInput").value = pack.title || "";
+      document.querySelector("#descriptionInput").value = pack.description || "";
+      document.querySelector("#functionInput").value = pack.functions || "";
+    }
+  };
+}
 </script>
 </body>
 </html>
