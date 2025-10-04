@@ -218,7 +218,6 @@ input[type="file"] { display:block; }
         <button class="btn" data-template="heal_all">❤️ 全員回復</button>
         <button class="btn" data-template="kill_mobs">💀 Mob全削除</button>
         <button class="btn" data-template="fly">✈️ クリエイティブモード</button>
-        <button class="btn" data-template="teleport_spawn">📍 スポーンへTP</button>
         <button class="btn" data-template="announce">📢 タイトル表示</button>
       </div>
     </div>
@@ -239,13 +238,12 @@ const uuidv4 = () => crypto.randomUUID ? crypto.randomUUID() :
 
 // Templates
 const templates = {
-  reset: {name: 'reset', body: 'clear @a\ngamemode survival @a\ntp @a 0 100 0\neffect @a clear'},
+  reset: {name: 'reset', body: 'clear @a\ngamemode survival @a\neffect @a clear'},
   time_day: {name: 'time_day', body: 'time set day\nweather clear'},
   give_items: {name: 'give_items', body: 'give @a diamond_sword 1\ngive @a diamond_pickaxe 1\ngive @a cooked_beef 64'},
   heal_all: {name: 'heal_all', body: 'effect @a instant_health 1 255\neffect @a saturation 1 255'},
   kill_mobs: {name: 'kill_mobs', body: 'kill @e[type=!player]'},
   fly: {name: 'fly', body: 'gamemode creative @a'},
-  teleport_spawn: {name: 'teleport_spawn', body: 'tp @a 0 100 0'},
   announce: {name: 'announce', body: 'title @a title Hello World\ntitle @a subtitle Welcome to my world!'}
 };
 
