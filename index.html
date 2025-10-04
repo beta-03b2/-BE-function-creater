@@ -1,5 +1,4 @@
 <!doctype html>
-
 <html lang="ja">
 <head>
 <meta charset="utf-8" />
@@ -50,38 +49,32 @@ input[type="file"] { display:block; }
 
 /* Header with menu */
 .header { display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px; }
-.hamburger { background:var(–card); border:1px solid var(–border); border-radius:8px; padding:10px 14px; cursor:pointer; display:flex; flex-direction:column; gap:4px; width:40px; height:40px; justify-content:center; transition:all .2s; }
+.hamburger { background:var(--card); border:1px solid var(--border); border-radius:8px; padding:10px 14px; cursor:pointer; display:flex; flex-direction:column; gap:4px; width:40px; height:40px; justify-content:center; transition:all .2s; }
 .hamburger:hover { background:#222734; }
-.hamburger span { display:block; width:100%; height:2px; background:var(–text); border-radius:2px; }
+.hamburger span { display:block; width:100%; height:2px; background:var(--text); border-radius:2px; }
 
 /* Modal */
 .modal-overlay { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,.7); display:none; align-items:center; justify-content:center; z-index:1000; padding:20px; }
 .modal-overlay.show { display:flex; }
-.modal { background:var(–card); border:1px solid var(–border); border-radius:var(–radius); max-width:600px; width:100%; max-height:80vh; overflow-y:auto; padding:24px; }
+.modal { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); max-width:600px; width:100%; max-height:80vh; overflow-y:auto; padding:24px; }
 .modal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
 .modal-title { font-size:1.3rem; font-weight:700; margin:0; }
-.close-btn { background:transparent; border:none; color:var(–text); font-size:1.5rem; cursor:pointer; padding:0; width:30px; height:30px; }
+.close-btn { background:transparent; border:none; color:var(--text); font-size:1.5rem; cursor:pointer; padding:0; width:30px; height:30px; }
 .saved-list { display:grid; gap:8px; max-height:400px; overflow-y:auto; }
-.saved-item { background:#0f1115; border:1px solid var(–border); border-radius:8px; padding:12px; display:flex; justify-content:space-between; align-items:center; gap:12px; transition:border-color .2s; }
-.saved-item:hover { border-color:var(–primary); }
+.saved-item { background:#0f1115; border:1px solid var(--border); border-radius:8px; padding:12px; display:flex; justify-content:space-between; align-items:center; gap:12px; transition:border-color .2s; }
+.saved-item:hover { border-color:var(--primary); }
 .saved-info { flex:1; min-width:0; }
 .saved-title { font-weight:700; margin-bottom:4px; }
-.saved-meta { font-size:.8rem; color:var(–hint); }
+.saved-meta { font-size:.8rem; color:var(--hint); }
 .saved-actions { display:flex; gap:6px; }
 
 /* Toast */
-.toast { position:fixed; bottom:20px; right:20px; background:var(–card); border:1px solid var(–border); border-radius:8px; padding:12px 16px; box-shadow:0 4px 12px rgba(0,0,0,.3); z-index:1001; display:none; min-width:250px; }
+.toast { position:fixed; bottom:20px; right:20px; background:var(--card); border:1px solid var(--border); border-radius:8px; padding:12px 16px; box-shadow:0 4px 12px rgba(0,0,0,.3); z-index:1001; display:none; min-width:250px; }
 .toast.show { display:block; animation:slideIn .3s; }
 .toast.success { border-left:4px solid #4ade80; }
 .toast.error { border-left:4px solid #ff6b6b; }
 @keyframes slideIn { from { transform:translateX(400px); opacity:0; } to { transform:translateX(0); opacity:1; } }
-
-/* Version inputs */
-.version-input { display:flex; gap:8px; align-items:center; }
-.version-input input { width:60px; text-align:center; }
-.version-input span { color:var(–hint); }
 </style>
-
 </head>
 <body>
   <div class="app">
@@ -97,112 +90,108 @@ input[type="file"] { display:block; }
       </div>
     </header>
 
-```
-<!-- パック情報 -->
-<section class="card">
-  <h2>パック基本情報</h2>
-  <div class="row two">
-    <div>
-      <label class="req">パックのタイトル</label>
-      <input type="text" id="packTitle" placeholder="例）My Function Pack" />
-    </div>
-    <div>
-      <label>説明</label>
-      <input type="text" id="packDesc" placeholder="例）コマンド自動化用の関数集" />
-    </div>
-  </div>
-  <div class="spacer"></div>
-  <div class="row three">
-    <div>
-      <label>パックのバージョン</label>
-      <input type="text" id="packVersion" value="1.0.0" placeholder="1.0.0" />
-    </div>
-    <div>
-      <label>最小エンジンバージョン</label>
-      <input type="text" id="minEngineVersion" value="1.20.0" placeholder="1.20.0" />
-      <div class="hint">Minecraft の最低バージョン</div>
-    </div>
-    <div>
-      <label>アイコン画像</label>
-      <input type="file" id="packIcon" accept="image/*" />
-    </div>
-  </div>
-</section>
-
-<!-- function作成 -->
-<section class="card">
-  <h2>Function の作成</h2>
-  <div class="row">
-    <div>
-      <label class="req">コマンド名（ファイル名）</label>
-      <div style="display:flex;gap:8px;">
-        <input type="text" id="funcName" placeholder="例）reset" style="flex:1;" />
-        <button class="btn ghost" id="funcTemplateBtn">📝 テンプレート</button>
+    <!-- パック情報 -->
+    <section class="card">
+      <h2>パック基本情報</h2>
+      <div class="row two">
+        <div>
+          <label class="req">パックのタイトル</label>
+          <input type="text" id="packTitle" placeholder="例）My Function Pack" />
+        </div>
+        <div>
+          <label>説明</label>
+          <input type="text" id="packDesc" placeholder="例）コマンド自動化用の関数集" />
+        </div>
       </div>
-      <div class="hint">.mcfunction は自動付与されます</div>
-    </div>
-    <div>
-      <label class="req">コマンド内容（1行に1コマンド）</label>
-      <textarea id="funcBody" placeholder="clear @a&#10;tp @a 0 0 0&#10;gamemode a @a"></textarea>
-      <div class="hint">先頭の / は自動削除されます | 行数: <span id="lineCount">0</span></div>
-    </div>
-    <div class="toolbar">
-      <button class="btn primary" id="addFuncBtn">＋ 追加</button>
-      <button class="btn ghost" id="clearFuncBtn">クリア</button>
-      <span id="funcMsg"></span>
-    </div>
-  </div>
-  <div class="spacer"></div>
-  <div class="functions" id="funcList">
-    <div class="list-empty">まだ function がありません。追加してください。</div>
-  </div>
-</section>
+      <div class="spacer"></div>
+      <div class="row three">
+        <div>
+          <label>パックのバージョン</label>
+          <input type="text" id="packVersion" value="1.0.0" placeholder="1.0.0" />
+        </div>
+        <div>
+          <label>最小エンジンバージョン</label>
+          <input type="text" id="minEngineVersion" value="1.20.0" placeholder="1.20.0" />
+          <div class="hint">Minecraft の最低バージョン</div>
+        </div>
+        <div>
+          <label>アイコン画像</label>
+          <input type="file" id="packIcon" accept="image/*" />
+        </div>
+      </div>
+    </section>
 
-<!-- 出力 -->
-<section class="card">
-  <h2>エクスポート</h2>
-  <div class="toolbar">
-    <button class="btn primary" id="exportBtn">📥 .mcaddon をダウンロード</button>
-    <button class="btn" id="copyLinkBtn">🔗 共有リンク生成</button>
-    <button class="btn" id="saveProjectBtn">💾 手動保存</button>
-    <button class="btn ghost" id="resetAllBtn">🔄 全てリセット</button>
-  </div>
-  <div class="hint" style="margin-top:8px;">💡 Function の追加・編集・削除・エクスポート時に自動保存されます</div>
-  <div id="exportMsg" class="hint" style="margin-top:4px;"></div>
-  <div id="shareLink" style="margin-top:12px;display:none;">
-    <label>共有リンク（コピーして共有）</label>
-    <div style="display:flex;gap:8px;margin-top:6px;">
-      <input type="text" id="shareLinkInput" readonly style="flex:1;" />
-      <button class="btn" id="copyShareBtn">📋 コピー</button>
-    </div>
-    <div class="hint" style="margin-top:4px;">このリンクからプロジェクトを復元できます（URLにデータを含みます）</div>
-  </div>
-</section>
+    <!-- function作成 -->
+    <section class="card">
+      <h2>Function の作成</h2>
+      <div class="row">
+        <div>
+          <label class="req">コマンド名（ファイル名）</label>
+          <div style="display:flex;gap:8px;">
+            <input type="text" id="funcName" placeholder="例）reset" style="flex:1;" />
+            <button class="btn ghost" id="funcTemplateBtn">📝 テンプレート</button>
+          </div>
+          <div class="hint">.mcfunction は自動付与されます</div>
+        </div>
+        <div>
+          <label class="req">コマンド内容（1行に1コマンド）</label>
+          <textarea id="funcBody" placeholder="clear @a&#10;tp @a 0 0 0&#10;gamemode a @a"></textarea>
+          <div class="hint">先頭の / は自動削除されます | 行数: <span id="lineCount">0</span></div>
+        </div>
+        <div class="toolbar">
+          <button class="btn primary" id="addFuncBtn">＋ 追加</button>
+          <button class="btn ghost" id="clearFuncBtn">クリア</button>
+          <span id="funcMsg"></span>
+        </div>
+      </div>
+      <div class="spacer"></div>
+      <div class="functions" id="funcList">
+        <div class="list-empty">まだ function がありません。追加してください。</div>
+      </div>
+    </section>
 
-<!-- インポート補助 -->
-<section class="card">
-  <h2>📱 Minecraft へのインポート方法</h2>
-  <div style="display:grid;gap:12px;">
-    <div style="background:#0f1115;padding:12px;border-radius:8px;border-left:4px solid var(--primary);">
-      <div style="font-weight:700;margin-bottom:6px;">🖥️ Windows / PC</div>
-      <div class="hint">1. ダウンロードした .mcaddon ファイルをダブルクリック<br>2. Minecraft が自動起動してインポートされます</div>
-    </div>
-    <div style="background:#0f1115;padding:12px;border-radius:8px;border-left:4px solid #4ade80;">
-      <div style="font-weight:700;margin-bottom:6px;">📱 iOS / iPadOS</div>
-      <div class="hint">1. ダウンロードした .mcaddon ファイルをタップ<br>2. 「次で開く」→「Minecraft」を選択<br>3. 自動的にインポートされます</div>
-    </div>
-    <div style="background:#0f1115;padding:12px;border-radius:8px;border-left:4px solid #22c55e;">
-      <div style="font-weight:700;margin-bottom:6px;">🤖 Android</div>
-      <div class="hint">1. ダウンロードした .mcaddon ファイルをタップ<br>2. Minecraft を選択してインポート<br>3. または、ファイルマネージャーから games/com.mojang/behavior_packs/ にコピー</div>
-    </div>
-  </div>
-</section>
-```
+    <!-- 出力 -->
+    <section class="card">
+      <h2>エクスポート</h2>
+      <div class="toolbar">
+        <button class="btn primary" id="exportBtn">📥 .mcaddon をダウンロード</button>
+        <button class="btn" id="copyLinkBtn">🔗 共有リンク生成</button>
+        <button class="btn" id="saveProjectBtn">💾 手動保存</button>
+        <button class="btn ghost" id="resetAllBtn">🔄 全てリセット</button>
+      </div>
+      <div class="hint" style="margin-top:8px;">💡 Function の追加・編集・削除・エクスポート時に自動保存されます</div>
+      <div id="exportMsg" class="hint" style="margin-top:4px;"></div>
+      <div id="shareLink" style="margin-top:12px;display:none;">
+        <label>共有リンク（コピーして共有）</label>
+        <div style="display:flex;gap:8px;margin-top:6px;">
+          <input type="text" id="shareLinkInput" readonly style="flex:1;" />
+          <button class="btn" id="copyShareBtn">📋 コピー</button>
+        </div>
+        <div class="hint" style="margin-top:4px;">このリンクからプロジェクトを復元できます（URLにデータを含みます）</div>
+      </div>
+    </section>
 
+    <!-- インポート補助 -->
+    <section class="card">
+      <h2>📱 Minecraft へのインポート方法</h2>
+      <div style="display:grid;gap:12px;">
+        <div style="background:#0f1115;padding:12px;border-radius:8px;border-left:4px solid var(--primary);">
+          <div style="font-weight:700;margin-bottom:6px;">🖥️ Windows / PC</div>
+          <div class="hint">1. ダウンロードした .mcaddon ファイルをダブルクリック<br>2. Minecraft が自動起動してインポートされます</div>
+        </div>
+        <div style="background:#0f1115;padding:12px;border-radius:8px;border-left:4px solid #4ade80;">
+          <div style="font-weight:700;margin-bottom:6px;">📱 iOS / iPadOS</div>
+          <div class="hint">1. ダウンロードした .mcaddon ファイルをタップ<br>2. 「次で開く」→「Minecraft」を選択<br>3. 自動的にインポートされます</div>
+        </div>
+        <div style="background:#0f1115;padding:12px;border-radius:8px;border-left:4px solid #22c55e;">
+          <div style="font-weight:700;margin-bottom:6px;">🤖 Android</div>
+          <div class="hint">1. ダウンロードした .mcaddon ファイルをタップ<br>2. Minecraft を選択してインポート<br>3. または、ファイルマネージャーから games/com.mojang/behavior_packs/ にコピー</div>
+        </div>
+      </div>
+    </section>
   </div>
 
   <!-- Menu Modal -->
-
   <div class="modal-overlay" id="menuModal">
     <div class="modal">
       <div class="modal-header">
@@ -216,7 +205,6 @@ input[type="file"] { display:block; }
   </div>
 
   <!-- Template Modal -->
-
   <div class="modal-overlay" id="templateModal">
     <div class="modal">
       <div class="modal-header">
@@ -224,30 +212,42 @@ input[type="file"] { display:block; }
         <button class="close-btn" id="closeTemplateBtn">&times;</button>
       </div>
       <div style="display:grid;gap:10px;">
-        <button class="btn" onclick="useTemplate('reset', 'clear @a\\ngamemode survival @a\\ntp @a 0 100 0\\neffect @a clear')">🔄 プレイヤーリセット</button>
-        <button class="btn" onclick="useTemplate('time_day', 'time set day\\nweather clear')">☀️ 昼 + 晴天</button>
-        <button class="btn" onclick="useTemplate('give_items', 'give @a diamond_sword 1\\ngive @a diamond_pickaxe 1\\ngive @a cooked_beef 64')">🎁 アイテム配布</button>
-        <button class="btn" onclick="useTemplate('heal_all', 'effect @a instant_health 1 255\\neffect @a saturation 1 255')">❤️ 全員回復</button>
-        <button class="btn" onclick="useTemplate('kill_mobs', 'kill @e[type=!player]')">💀 Mob全削除</button>
-        <button class="btn" onclick="useTemplate('fly', 'gamemode creative @a')">✈️ クリエイティブモード</button>
-        <button class="btn" onclick="useTemplate('teleport_spawn', 'tp @a 0 100 0')">📍 スポーンへTP</button>
-        <button class="btn" onclick="useTemplate('announce', 'title @a title Hello World\\ntitle @a subtitle Welcome to my world!')">📢 タイトル表示</button>
+        <button class="btn" data-template="reset">🔄 プレイヤーリセット</button>
+        <button class="btn" data-template="time_day">☀️ 昼 + 晴天</button>
+        <button class="btn" data-template="give_items">🎁 アイテム配布</button>
+        <button class="btn" data-template="heal_all">❤️ 全員回復</button>
+        <button class="btn" data-template="kill_mobs">💀 Mob全削除</button>
+        <button class="btn" data-template="fly">✈️ クリエイティブモード</button>
+        <button class="btn" data-template="teleport_spawn">📍 スポーンへTP</button>
+        <button class="btn" data-template="announce">📢 タイトル表示</button>
       </div>
     </div>
   </div>
 
   <!-- Toast -->
-
   <div class="toast" id="toast"></div>
 
 <script>
 const $ = sel => document.querySelector(sel);
+const $$ = sel => document.querySelectorAll(sel);
 const sanitizeName = s => (s||"").trim().toLowerCase().replace(/\s+/g,"_").replace(/[^a-z0-9_\-\.]/g,"_");
 const parseVersion = v => (v||"1.0.0").split(".").map(n=>parseInt(n)||0);
 const uuidv4 = () => crypto.randomUUID ? crypto.randomUUID() :
   "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,c=>{
     const r=Math.random()*16|0,v=c==="x"?r:(r&0x3|0x8);return v.toString(16);
   });
+
+// Templates
+const templates = {
+  reset: {name: 'reset', body: 'clear @a\ngamemode survival @a\ntp @a 0 100 0\neffect @a clear'},
+  time_day: {name: 'time_day', body: 'time set day\nweather clear'},
+  give_items: {name: 'give_items', body: 'give @a diamond_sword 1\ngive @a diamond_pickaxe 1\ngive @a cooked_beef 64'},
+  heal_all: {name: 'heal_all', body: 'effect @a instant_health 1 255\neffect @a saturation 1 255'},
+  kill_mobs: {name: 'kill_mobs', body: 'kill @e[type=!player]'},
+  fly: {name: 'fly', body: 'gamemode creative @a'},
+  teleport_spawn: {name: 'teleport_spawn', body: 'tp @a 0 100 0'},
+  announce: {name: 'announce', body: 'title @a title Hello World\ntitle @a subtitle Welcome to my world!'}
+};
 
 // IndexedDB setup
 let db;
@@ -338,39 +338,46 @@ const templateModal=$("#templateModal");
 const closeTemplateBtn=$("#closeTemplateBtn");
 const lineCountEl=$("#lineCount");
 
-// Update line count
-funcBodyEl.addEventListener("input", ()=>{
-  const lines = funcBodyEl.value.split("\n").length;
-  lineCountEl.textContent = lines;
-});
-
-// Template modal
-$("#funcTemplateBtn").addEventListener("click", ()=>{
-  templateModal.classList.add("show");
-});
-
-closeTemplateBtn.addEventListener("click", ()=>{
-  templateModal.classList.remove("show");
-});
-
-templateModal.addEventListener("click", (e)=>{
-  if(e.target === templateModal) templateModal.classList.remove("show");
-});
-
-window.useTemplate = function(name, body){
-  funcNameEl.value = name;
-  funcBodyEl.value = body;
-  lineCountEl.textContent = body.split("\n").length;
-  templateModal.classList.remove("show");
-  showToast(`テンプレート「${name}」を読み込みました`);
-}
-
 // Toast notification
 function showToast(msg, type="success"){
   toast.textContent = msg;
   toast.className = `toast ${type} show`;
   setTimeout(()=>toast.classList.remove("show"), 3000);
 }
+
+// Auto-save project
+async function autoSaveProject(showNotification = false){
+  const title = packTitleEl.value.trim();
+  if(!title || functions.length === 0) return;
+  
+  const projectData = {
+    title,
+    description: packDescEl.value.trim(),
+    version: packVersionEl.value.trim(),
+    minEngineVersion: minEngineVersionEl.value.trim(),
+    functions: functions.map(f=>({...f})),
+    savedAt: Date.now()
+  };
+  
+  if(currentProjectId) projectData.id = currentProjectId;
+  
+  try {
+    const id = await saveProject(projectData);
+    currentProjectId = id;
+    
+    if(showNotification){
+      showToast("プロジェクトを保存しました");
+    }
+  } catch(e) {
+    console.error("Save error:", e);
+  }
+}
+
+// Update line count
+funcBodyEl.addEventListener("input", ()=>{
+  const lines = funcBodyEl.value.split("\n").length;
+  lineCountEl.textContent = lines;
+});
 
 // Menu modal
 menuBtn.addEventListener("click", async ()=>{
@@ -403,15 +410,23 @@ function renderSavedProjects(projects){
         <div class="saved-meta">${date} - ${p.functions?.length || 0} functions</div>
       </div>
       <div class="saved-actions">
-        <button class="btn" onclick="loadProject(${p.id})">読込</button>
-        <button class="btn danger" onclick="removeProject(${p.id})">削除</button>
+        <button class="btn load-project" data-id="${p.id}">読込</button>
+        <button class="btn danger delete-project" data-id="${p.id}">削除</button>
       </div>
     `;
     savedList.appendChild(div);
   });
+  
+  // Add event listeners
+  $$('.load-project').forEach(btn => {
+    btn.addEventListener('click', () => loadProject(parseInt(btn.dataset.id)));
+  });
+  $$('.delete-project').forEach(btn => {
+    btn.addEventListener('click', () => removeProject(parseInt(btn.dataset.id)));
+  });
 }
 
-window.loadProject = async function(id){
+async function loadProject(id){
   const projects = await getAllProjects();
   const project = projects.find(p=>p.id===id);
   if(!project) return;
@@ -429,7 +444,7 @@ window.loadProject = async function(id){
   showToast("プロジェクトを読み込みました");
 }
 
-window.removeProject = async function(id){
+async function removeProject(id){
   if(!confirm("本当に削除しますか？")) return;
   await deleteProject(id);
   const projects = await getAllProjects();
@@ -437,29 +452,33 @@ window.removeProject = async function(id){
   showToast("プロジェクトを削除しました", "error");
 }
 
-// Auto-save project
-async function autoSaveProject(showNotification = false){
-  const title = packTitleEl.value.trim();
-  if(!title || functions.length === 0) return;
-  
-  const projectData = {
-    title,
-    description: packDescEl.value.trim(),
-    version: packVersionEl.value.trim(),
-    minEngineVersion: minEngineVersionEl.value.trim(),
-    functions: functions.map(f=>({...f})),
-    savedAt: Date.now()
-  };
-  
-  if(currentProjectId) projectData.id = currentProjectId;
-  
-  const id = await saveProject(projectData);
-  currentProjectId = id;
-  
-  if(showNotification){
-    showToast("プロジェクトを保存しました");
-  }
-}
+// Template modal
+$("#funcTemplateBtn").addEventListener("click", ()=>{
+  templateModal.classList.add("show");
+});
+
+closeTemplateBtn.addEventListener("click", ()=>{
+  templateModal.classList.remove("show");
+});
+
+templateModal.addEventListener("click", (e)=>{
+  if(e.target === templateModal) templateModal.classList.remove("show");
+});
+
+// Template buttons
+$$('[data-template]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const templateKey = btn.dataset.template;
+    const template = templates[templateKey];
+    if(template){
+      funcNameEl.value = template.name;
+      funcBodyEl.value = template.body;
+      lineCountEl.textContent = template.body.split("\n").length;
+      templateModal.classList.remove("show");
+      showToast(`テンプレート「${template.name}」を読み込みました`);
+    }
+  });
+});
 
 // Save project manually
 $("#saveProjectBtn").addEventListener("click", async ()=>{
@@ -486,6 +505,7 @@ $("#resetAllBtn").addEventListener("click", ()=>{
   packIconEl.value = "";
   funcNameEl.value = "";
   funcBodyEl.value = "";
+  lineCountEl.textContent = "0";
   functions = [];
   seq = 0;
   editId = null;
@@ -498,6 +518,7 @@ $("#resetAllBtn").addEventListener("click", ()=>{
 $("#clearFuncBtn").addEventListener("click", ()=>{
   funcNameEl.value = "";
   funcBodyEl.value = "";
+  lineCountEl.textContent = "0";
   editId = null;
   $("#addFuncBtn").textContent = "＋ 追加";
 });
@@ -533,7 +554,8 @@ $("#addFuncBtn").addEventListener("click", async ()=>{
     showToast(`${name}.mcfunction を追加しました`);
   }
   
-  funcNameEl.value=""; funcBodyEl.value="";
+  funcNameEl.value=""; 
+  funcBodyEl.value="";
   lineCountEl.textContent = "0";
   renderFunctions();
   
@@ -565,178 +587,182 @@ function renderFunctions(){
           <span class="badge">${lineCount} 行</span>
         </div>
         <div class="icons">
-          <button class="btn" onclick="editFunction(${f.id})">✏️ 編集</button>
-          <button class="btn danger" onclick="deleteFunction(${f.id})">🗑️ 削除</button>
+          <button class="btn edit-func" data-id="${f.id}">✏️ 編集</button>
+          <button class="btn danger delete-func" data-id="${f.id}">🗑️ 削除</button>
         </div>
       </div>
       <pre class="mono" style="margin:0;overflow-x:auto;background:#0a0b0e;padding:8px;border-radius:6px;">${f.body}</pre>`;
-
-```
-funcListEl.appendChild(div);
-```
-
-});
+    funcListEl.appendChild(div);
+  });
+  
+  // Add event listeners
+  $$('.edit-func').forEach(btn => {
+    btn.addEventListener('click', () => editFunction(parseInt(btn.dataset.id)));
+  });
+  $$('.delete-func').forEach(btn => {
+    btn.addEventListener('click', () => deleteFunction(parseInt(btn.dataset.id)));
+  });
 }
 
-window.editFunction = function(id){
-let f = functions.find(x => x.id === id);
-if(!f) return;
-funcNameEl.value = f.name;
-funcBodyEl.value = f.body;
-editId = id;
-$(”#addFuncBtn”).textContent = “💾 保存”;
-window.scrollTo({top:0, behavior:“smooth”});
+function editFunction(id){
+  let f = functions.find(x => x.id === id);
+  if(!f) return;
+  funcNameEl.value = f.name;
+  funcBodyEl.value = f.body;
+  lineCountEl.textContent = f.body.split("\n").length;
+  editId = id;
+  $("#addFuncBtn").textContent = "💾 保存";
+  window.scrollTo({top:0, behavior:"smooth"});
 }
 
-window.deleteFunction = async function(id){
-if(!confirm(“この function を削除しますか？”)) return;
-functions = functions.filter(f => f.id !== id);
-renderFunctions();
-showToast(“Function を削除しました”, “error”);
-
-// Auto-save after deletion
-await autoSaveProject();
+async function deleteFunction(id){
+  if(!confirm("この function を削除しますか？")) return;
+  functions = functions.filter(f => f.id !== id);
+  renderFunctions();
+  showToast("Function を削除しました", "error");
+  
+  // Auto-save after deletion
+  await autoSaveProject();
 }
 
 function buildManifest(){
-const name=packTitleEl.value.trim();
-const desc=packDescEl.value.trim()||name;
-const version=parseVersion(packVersionEl.value);
-const minEngine=parseVersion(minEngineVersionEl.value);
-return {
-format_version:2,
-header:{name,description:desc,uuid:uuidv4(),version,min_engine_version:minEngine},
-modules:[{type:“data”,uuid:uuidv4(),version}]
-};
+  const name=packTitleEl.value.trim();
+  const desc=packDescEl.value.trim()||name;
+  const version=parseVersion(packVersionEl.value);
+  const minEngine=parseVersion(minEngineVersionEl.value);
+  return {
+    format_version:2,
+    header:{name,description:desc,uuid:uuidv4(),version,min_engine_version:minEngine},
+    modules:[{type:"data",uuid:uuidv4(),version}]
+  };
 }
 
-exportBtn.addEventListener(“click”, async()=>{
-exportMsg.textContent=””;
-const title=packTitleEl.value.trim();
-if(!title){showToast(“パックタイトルを入力してください”, “error”);return;}
-if(functions.length===0){showToast(“少なくとも1つの function を追加してください”, “error”);return;}
+exportBtn.addEventListener("click", async()=>{
+  exportMsg.textContent="";
+  const title=packTitleEl.value.trim();
+  if(!title){showToast("パックタイトルを入力してください", "error");return;}
+  if(functions.length===0){showToast("少なくとも1つの function を追加してください", "error");return;}
+  
+  const safeTitle=sanitizeName(title)||"behavior_pack";
+  const manifest=buildManifest();
+  const zip=new JSZip();
+  const bp=zip.folder(safeTitle);
+  bp.file("manifest.json",JSON.stringify(manifest,null,2));
+  const funcsDir=bp.folder("functions");
+  functions.forEach(f=>funcsDir.file(`${f.name}.mcfunction`,f.body+"\n"));
+  const iconFile=packIconEl.files&&packIconEl.files[0];
+  if(iconFile){
+    const buf=await fileToArrayBuffer(iconFile);
+    bp.file("pack_icon.png",buf);
+  }
+  const fileName=`${safeTitle}.mcaddon`;
 
-const safeTitle=sanitizeName(title)||“behavior_pack”;
-const manifest=buildManifest();
-const zip=new JSZip();
-const bp=zip.folder(safeTitle);
-bp.file(“manifest.json”,JSON.stringify(manifest,null,2));
-const funcsDir=bp.folder(“functions”);
-functions.forEach(f=>funcsDir.file(`${f.name}.mcfunction`,f.body+”\n”));
-const iconFile=packIconEl.files&&packIconEl.files[0];
-if(iconFile){
-const buf=await fileToArrayBuffer(iconFile);
-bp.file(“pack_icon.png”,buf);
-}
-const fileName=`${safeTitle}.mcaddon`;
-
-if(/iPad|iPhone|iPod/.test(navigator.userAgent)){
-const base64=await zip.generateAsync({type:“base64”});
-const link=document.createElement(“a”);
-link.href=“data:application/zip;base64,”+base64;
-link.download=fileName;
-document.body.appendChild(link);
-link.click();
-document.body.removeChild(link);
-showToast(`${fileName} を保存しました（iOS）`);
-} else {
-const blob=await zip.generateAsync({type:“blob”});
-saveAs(blob,fileName);
-showToast(`${fileName} をダウンロードしました`);
-}
-
-// Auto-save on export
-await autoSaveProject();
+  if(/iPad|iPhone|iPod/.test(navigator.userAgent)){
+    const base64=await zip.generateAsync({type:"base64"});
+    const link=document.createElement("a");
+    link.href="data:application/zip;base64,"+base64;
+    link.download=fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast(`${fileName} を保存しました（iOS）`);
+  } else {
+    const blob=await zip.generateAsync({type:"blob"});
+    saveAs(blob,fileName);
+    showToast(`${fileName} をダウンロードしました`);
+  }
+  
+  // Auto-save on export
+  await autoSaveProject();
 });
-
-function fileToArrayBuffer(file){
-return new Promise((res,rej)=>{
-const fr=new FileReader();
-fr.onload=()=>res(fr.result);
-fr.onerror=rej;
-fr.readAsArrayBuffer(file);
-});
-}
 
 // Copy share link
-$(”#copyShareBtn”).addEventListener(“click”, ()=>{
-const input = $(”#shareLinkInput”);
-input.select();
-document.execCommand(“copy”);
-showToast(“リンクをコピーしました”);
+$("#copyShareBtn").addEventListener("click", ()=>{
+  const input = $("#shareLinkInput");
+  input.select();
+  document.execCommand("copy");
+  showToast("リンクをコピーしました");
 });
 
 // Generate share link
-$(”#copyLinkBtn”).addEventListener(“click”, ()=>{
-const title = packTitleEl.value.trim();
-if(!title){showToast(“タイトルを入力してください”, “error”);return;}
-if(functions.length===0){showToast(“少なくとも1つの function を追加してください”, “error”);return;}
-
-const projectData = {
-title,
-description: packDescEl.value.trim(),
-version: packVersionEl.value.trim(),
-minEngineVersion: minEngineVersionEl.value.trim(),
-functions: functions.map(f=>({name:f.name, body:f.body}))
-};
-
-const compressed = btoa(encodeURIComponent(JSON.stringify(projectData)));
-const url = `${window.location.origin}${window.location.pathname}?data=${compressed}`;
-
-$(”#shareLinkInput”).value = url;
-$(”#shareLink”).style.display = “block”;
-showToast(“共有リンクを生成しました”);
+$("#copyLinkBtn").addEventListener("click", ()=>{
+  const title = packTitleEl.value.trim();
+  if(!title){showToast("タイトルを入力してください", "error");return;}
+  if(functions.length===0){showToast("少なくとも1つの function を追加してください", "error");return;}
+  
+  const projectData = {
+    title,
+    description: packDescEl.value.trim(),
+    version: packVersionEl.value.trim(),
+    minEngineVersion: minEngineVersionEl.value.trim(),
+    functions: functions.map(f=>({name:f.name, body:f.body}))
+  };
+  
+  const compressed = btoa(encodeURIComponent(JSON.stringify(projectData)));
+  const url = `${window.location.origin}${window.location.pathname}?data=${compressed}`;
+  
+  $("#shareLinkInput").value = url;
+  $("#shareLink").style.display = "block";
+  showToast("共有リンクを生成しました");
 });
 
 // Load from URL
 function loadFromURL(){
-const params = new URLSearchParams(window.location.search);
-const data = params.get(“data”);
-if(data){
-try{
-const projectData = JSON.parse(decodeURIComponent(atob(data)));
-packTitleEl.value = projectData.title || “”;
-packDescEl.value = projectData.description || “”;
-packVersionEl.value = projectData.version || “1.0.0”;
-minEngineVersionEl.value = projectData.minEngineVersion || “1.20.0”;
-functions = (projectData.functions || []).map((f,i)=>({id:++seq, name:f.name, body:f.body}));
-renderFunctions();
-showToast(“URLからプロジェクトを読み込みました”);
-// Clean URL
-window.history.replaceState({}, document.title, window.location.pathname);
-}catch(e){
-showToast(“URLからの読み込みに失敗しました”, “error”);
+  const params = new URLSearchParams(window.location.search);
+  const data = params.get("data");
+  if(data){
+    try{
+      const projectData = JSON.parse(decodeURIComponent(atob(data)));
+      packTitleEl.value = projectData.title || "";
+      packDescEl.value = projectData.description || "";
+      packVersionEl.value = projectData.version || "1.0.0";
+      minEngineVersionEl.value = projectData.minEngineVersion || "1.20.0";
+      functions = (projectData.functions || []).map((f,i)=>({id:++seq, name:f.name, body:f.body}));
+      renderFunctions();
+      showToast("URLからプロジェクトを読み込みました");
+      // Clean URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }catch(e){
+      showToast("URLからの読み込みに失敗しました", "error");
+    }
+  }
 }
-}
+
+function fileToArrayBuffer(file){
+  return new Promise((res,rej)=>{
+    const fr=new FileReader();
+    fr.onload=()=>res(fr.result);
+    fr.onerror=rej;
+    fr.readAsArrayBuffer(file);
+  });
 }
 
 // Init
 (async ()=>{
-await initDB();
-
-// Check URL first
-if(window.location.search.includes(“data=”)){
-loadFromURL();
-return;
-}
-
-const last = await getLastProject();
-if(last){
-const load = confirm(“前回のプロジェクトを復元しますか？”);
-if(load){
-packTitleEl.value = last.title || “”;
-packDescEl.value = last.description || “”;
-packVersionEl.value = last.version || “1.0.0”;
-minEngineVersionEl.value = last.minEngineVersion || “1.20.0”;
-functions = last.functions || [];
-seq = Math.max(…functions.map(f=>f.id), 0);
-currentProjectId = last.id;
-renderFunctions();
-showToast(“前回のプロジェクトを復元しました”);
-}
-}
+  await initDB();
+  
+  // Check URL first
+  if(window.location.search.includes("data=")){
+    loadFromURL();
+    return;
+  }
+  
+  const last = await getLastProject();
+  if(last){
+    const load = confirm("前回のプロジェクトを復元しますか？");
+    if(load){
+      packTitleEl.value = last.title || "";
+      packDescEl.value = last.description || "";
+      packVersionEl.value = last.version || "1.0.0";
+      minEngineVersionEl.value = last.minEngineVersion || "1.20.0";
+      functions = last.functions || [];
+      seq = Math.max(...functions.map(f=>f.id), 0);
+      currentProjectId = last.id;
+      renderFunctions();
+      showToast("前回のプロジェクトを復元しました");
+    }
+  }
 })();
 </script>
-
 </body>
 </html>
