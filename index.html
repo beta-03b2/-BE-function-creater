@@ -111,7 +111,7 @@ input[type="file"] { display:block; }
         </div>
         <div>
           <label>最小エンジンバージョン</label>
-          <input type="text" id="minEngineVersion" value="1.20.0" placeholder="1.20.0" />
+          <input type="text" id="minEngineVersion" value="1.21.111" placeholder="1.21.111" />
           <div class="hint">Minecraft の最低バージョン</div>
         </div>
         <div>
@@ -432,7 +432,7 @@ async function loadProject(id){
   packTitleEl.value = project.title || "";
   packDescEl.value = project.description || "";
   packVersionEl.value = project.version || "1.0.0";
-  minEngineVersionEl.value = project.minEngineVersion || "1.20.0";
+  minEngineVersionEl.value = project.minEngineVersion || "1.21.111";
   functions = project.functions || [];
   seq = Math.max(...functions.map(f=>f.id), 0);
   currentProjectId = id;
@@ -499,7 +499,7 @@ $("#resetAllBtn").addEventListener("click", ()=>{
   packTitleEl.value = "";
   packDescEl.value = "";
   packVersionEl.value = "1.0.0";
-  minEngineVersionEl.value = "1.20.0";
+  minEngineVersionEl.value = "1.21.111";
   packIconEl.value = "";
   funcNameEl.value = "";
   funcBodyEl.value = "";
@@ -714,7 +714,7 @@ function loadFromURL(){
       packTitleEl.value = projectData.title || "";
       packDescEl.value = projectData.description || "";
       packVersionEl.value = projectData.version || "1.0.0";
-      minEngineVersionEl.value = projectData.minEngineVersion || "1.20.0";
+      minEngineVersionEl.value = projectData.minEngineVersion || "1.21.111";
       functions = (projectData.functions || []).map((f,i)=>({id:++seq, name:f.name, body:f.body}));
       renderFunctions();
       showToast("URLからプロジェクトを読み込みました");
